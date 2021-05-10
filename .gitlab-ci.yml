@@ -1,0 +1,7 @@
+stages:
+  - lint
+
+lint:
+  stage: lint
+  image: harbor.shopeemobile.com/shopee/golangci-lint
+  script: run_lint.sh
