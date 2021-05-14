@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	config2 "git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
+	_ "git.garena.com/shaoyihong/go-entry-task/tcpserver/services"
 	"net"
 )
 
@@ -26,5 +27,4 @@ func main() {
 
 func handleConn(c net.Conn) {
 	defer c.Close()
-
 }

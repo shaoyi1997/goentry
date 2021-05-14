@@ -3,9 +3,6 @@ server:
 
 database:
   driver: mysql
-  username: root
-  host: 127.0.0.1
-  address: 3306
   name: go_entry_task_db
-
+  connection_url: root:Garena.com@tcp(127.0.0.1:3306)/mysql
 

@@ -11,11 +11,9 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Driver string `yaml:"driver"`
-	Username string `yaml:"username"`
-	Host string `yaml:"host"`
-	Address string `yaml:"address"`
-	Name string `yaml:"name"`
+	Driver        string `yaml:"driver"`
+	Name          string `yaml:"name"`
+	ConnectionUrl string `yaml:"connection_url"`
 }
 
 type Config struct {
@@ -25,7 +23,7 @@ type Config struct {
 
 var config Config
 
-func init()  {
+func init() {
 	file := openConfigFile()
 	defer file.Close()
 
@@ -37,7 +35,7 @@ func init()  {
 }
 
 func openConfigFile() *os.File {
-	file, err := os.Open("tcpserver/config/config.ymll")
+	file, err := os.Open("tcpserver/config/config.yml")
 	if err != nil {
 		logger.ErrorLogger.Fatal(err)
 	}
