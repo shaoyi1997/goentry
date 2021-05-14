@@ -10,8 +10,17 @@ type ServerConfig struct {
 	Port string `yaml:"port"`
 }
 
+type DatabaseConfig struct {
+	Driver string `yaml:"driver"`
+	Username string `yaml:"username"`
+	Host string `yaml:"host"`
+	Address string `yaml:"address"`
+	Name string `yaml:"name"`
+}
+
 type Config struct {
-	Server ServerConfig `yaml:"server"`
+	Server   ServerConfig   `yaml:"server"`
+	Database DatabaseConfig `yaml:"database"`
 }
 
 var config Config
@@ -37,4 +46,8 @@ func openConfigFile() *os.File {
 
 func GetServerConfig() ServerConfig {
 	return config.Server
+}
+
+func GetDatabaseConfig() DatabaseConfig {
+	return config.Database
 }

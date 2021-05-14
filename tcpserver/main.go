@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	config2 "git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
 	"log"
 	"net"
@@ -8,7 +9,7 @@ import (
 
 func main() {
 	config := config2.GetServerConfig()
-	listener, err := net.Listen("tcp", ":" + config.Port)
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", config.Port))
 	if err != nil {
 		log.Fatal(err)
 	}
