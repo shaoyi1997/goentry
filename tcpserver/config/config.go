@@ -1,8 +1,8 @@
 package config
 
 import (
+	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"gopkg.in/yaml.v2"
-	"log"
 	"os"
 )
 
@@ -32,14 +32,14 @@ func init()  {
 	decoder := yaml.NewDecoder(file)
 	err := decoder.Decode(&config)
 	if err != nil {
-		log.Fatal("Unable to decode config file")
+		logger.ErrorLogger.Fatal("Unable to decode config file")
 	}
 }
 
 func openConfigFile() *os.File {
-	file, err := os.Open("tcpserver/config/config.yml")
+	file, err := os.Open("tcpserver/config/config.ymll")
 	if err != nil {
-		log.Fatal(err)
+		logger.ErrorLogger.Fatal(err)
 	}
 	return file
 }
