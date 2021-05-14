@@ -2,25 +2,38 @@ package main
 
 import (
 	"fmt"
-	"git.garena.com/shaoyihong/go-entry-task/common/logger"
-	config2 "git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
-	_ "git.garena.com/shaoyihong/go-entry-task/tcpserver/services"
 	"net"
+
+	"git.garena.com/shaoyihong/go-entry-task/common/logger"
+	"git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
+	"git.garena.com/shaoyihong/go-entry-task/tcpserver/services"
 )
 
 func main() {
-	config := config2.GetServerConfig()
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", config.Port))
+	logger.InitLogger()
+	config.InitConfig()
+	services.InitDB()
+	initTCPServer()
+}
+
+func initTCPServer() {
+	serverConfig := config.GetServerConfig()
+
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", serverConfig.Port))
 	if err != nil {
 		logger.ErrorLogger.Fatal(err)
 	}
-	logger.InfoLogger.Print("Server is listening on port " + config.Port)
+
+	logger.InfoLogger.Print("Server is listening on port " + serverConfig.Port)
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			logger.ErrorLogger.Print(err) // e.g., connection aborted
+			logger.ErrorLogger.Print(err)
+
 			continue
 		}
+
 		go handleConn(conn) // handle one connection at a time
 	}
 }

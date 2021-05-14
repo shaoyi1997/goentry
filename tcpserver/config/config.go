@@ -1,9 +1,10 @@
 package config
 
 import (
+	"os"
+
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"gopkg.in/yaml.v2"
-	"os"
 )
 
 type ServerConfig struct {
@@ -13,7 +14,7 @@ type ServerConfig struct {
 type DatabaseConfig struct {
 	Driver        string `yaml:"driver"`
 	Name          string `yaml:"name"`
-	ConnectionUrl string `yaml:"connection_url"`
+	ConnectionURL string `yaml:"connection_url"`
 }
 
 type Config struct {
@@ -23,13 +24,12 @@ type Config struct {
 
 var config Config
 
-func init() {
+func InitConfig() {
 	file := openConfigFile()
 	defer file.Close()
 
 	decoder := yaml.NewDecoder(file)
-	err := decoder.Decode(&config)
-	if err != nil {
+	if err := decoder.Decode(&config); err != nil {
 		logger.ErrorLogger.Fatal("Unable to decode config file")
 	}
 }
@@ -39,6 +39,7 @@ func openConfigFile() *os.File {
 	if err != nil {
 		logger.ErrorLogger.Fatal(err)
 	}
+
 	return file
 }
 

@@ -3,17 +3,20 @@ package services
 import (
 	"database/sql"
 	"fmt"
+
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
+
+	// initialises mysql driver.
 	_ "github.com/go-sql-driver/mysql"
 )
 
 var db *sql.DB
 
-func init() {
+func InitDB() {
 	databaseConfig := config.GetDatabaseConfig()
 	var err error
-	db, err = sql.Open(databaseConfig.Driver, databaseConfig.ConnectionUrl)
+	db, err = sql.Open(databaseConfig.Driver, databaseConfig.ConnectionURL)
 	validateDBConnection(err)
 	logger.InfoLogger.Println("Database connection initialised successfully")
 	createDB(databaseConfig)

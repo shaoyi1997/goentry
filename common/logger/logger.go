@@ -12,10 +12,10 @@ var (
 	WarningLogger *log.Logger
 	InfoLogger    *log.Logger
 	ErrorLogger   *log.Logger
-	isProduction = flag.Bool("P", false, "Specifies the environment of the application")
+	isProduction  = flag.Bool("p", false, "Specifies the environment of the application")
 )
 
-func init() {
+func InitLogger() {
 	flag.Parse()
 
 	out := getOutputWriter()
@@ -31,9 +31,11 @@ func getOutputWriter() io.Writer {
 	}
 
 	filename := filepath.Base(os.Args[0])
-	file, err := os.OpenFile(filename + "-logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+
+	file, err := os.OpenFile(filename+"-logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return io.Writer(file)
 }
