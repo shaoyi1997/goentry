@@ -47,7 +47,7 @@ func initTCPListener() net.Listener {
 
 func runAcceptLoop(listener net.Listener) {
 	for {
-		conn, err := listener.Accept()
+		conn, err := listener.Accept() // TODO: set deadline?
 		if err != nil {
 			if isShutdownInitiated {
 				break
@@ -80,6 +80,7 @@ func monitorForGracefulShutdown(listener io.Closer) {
 func handleConn(conn net.Conn) {
 	defer conn.Close()
 	defer waitGroup.Done()
+
 	//for {
 	//	_, err := io.WriteString(conn, time.Now().Format("15:04:05\n"))
 	//	if err != nil {

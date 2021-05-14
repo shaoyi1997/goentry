@@ -19,6 +19,7 @@ func initDB() {
 	db, err = sql.Open(databaseConfig.Driver, databaseConfig.ConnectionURL)
 	validateDBConnection(err)
 	logger.InfoLogger.Println("Database connection initialised successfully")
+	configDB(databaseConfig)
 	createDB(databaseConfig)
 }
 
@@ -30,6 +31,11 @@ func validateDBConnection(err error) {
 	if err = db.Ping(); err != nil {
 		logger.ErrorLogger.Fatal(err)
 	}
+}
+
+func configDB(databaseConfig config.DatabaseConfig) {
+	db.SetMaxIdleConns(databaseConfig.MaxIdleConn)
+	db.SetMaxOpenConns(databaseConfig.MaxOpenConn)
 }
 
 func createDB(databaseConfig config.DatabaseConfig) {

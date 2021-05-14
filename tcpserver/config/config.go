@@ -15,6 +15,8 @@ type DatabaseConfig struct {
 	Driver        string `yaml:"driver"`
 	Name          string `yaml:"name"`
 	ConnectionURL string `yaml:"connection_url"`
+	MaxIdleConn   int    `yaml:"max_idle_conn"`
+	MaxOpenConn   int    `yaml:"max_open_conn"`
 }
 
 type Config struct {
