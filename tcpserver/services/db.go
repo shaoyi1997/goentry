@@ -13,7 +13,7 @@ import (
 
 var db *sql.DB
 
-func InitDB() {
+func initDB() {
 	databaseConfig := config.GetDatabaseConfig()
 	var err error
 	db, err = sql.Open(databaseConfig.Driver, databaseConfig.ConnectionURL)
@@ -36,5 +36,11 @@ func createDB(databaseConfig config.DatabaseConfig) {
 	sql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8 COLLATE utf8_bin", databaseConfig.Name)
 	if _, err := db.Exec(sql); err != nil {
 		logger.ErrorLogger.Panicln("Failed to create database")
+	}
+}
+
+func tearDownDB() {
+	if err := db.Close(); err != nil {
+		logger.ErrorLogger.Println(err)
 	}
 }
