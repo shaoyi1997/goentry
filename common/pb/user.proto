@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+option go_package = "git.garena.com/shaoyi.hong/go-entry-task/pb";
+
+message User {
+  required int64 user_id = 1;
+  required string username = 2;
+  required string password = 3;
+  optional string nickname = 4;
+  optional string profile_image = 5;
+}

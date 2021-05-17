@@ -1,11 +1,8 @@
 package services
 
-import "git.garena.com/shaoyihong/go-entry-task/common/logger"
-
 func Init() {
-	logger.InitLogger()
-	initDB()
+	InitDB()
 }
 func TearDown() {
-	tearDownDB()
+	TearDownDB()
 }

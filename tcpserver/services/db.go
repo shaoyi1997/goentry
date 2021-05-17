@@ -13,7 +13,12 @@ import (
 
 var db *sql.DB
 
-func initDB() {
+type Database struct {
+	Db           *sql.DB
+	DatabaseName string
+}
+
+func InitDB() *Database {
 	databaseConfig := config.GetDatabaseConfig()
 	var err error
 	db, err = sql.Open(databaseConfig.Driver, databaseConfig.ConnectionURL)
@@ -21,6 +26,10 @@ func initDB() {
 	logger.InfoLogger.Println("Database connection initialised successfully")
 	configDB(databaseConfig)
 	createDB(databaseConfig)
+	return &Database{
+		Db:           db,
+		DatabaseName: databaseConfig.Name,
+	}
 }
 
 func validateDBConnection(err error) {
@@ -39,13 +48,14 @@ func configDB(databaseConfig config.DatabaseConfig) {
 }
 
 func createDB(databaseConfig config.DatabaseConfig) {
-	sql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8 COLLATE utf8_bin", databaseConfig.Name)
-	if _, err := db.Exec(sql); err != nil {
+	createDBQuery := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8 COLLATE utf8_bin", databaseConfig.Name)
+	if _, err := db.Exec(createDBQuery); err != nil {
 		logger.ErrorLogger.Panicln("Failed to create database")
 	}
 }
 
-func tearDownDB() {
+func TearDownDB() {
+	logger.InfoLogger.Println("Tearing down DB connection")
 	if err := db.Close(); err != nil {
 		logger.ErrorLogger.Println(err)
 	}

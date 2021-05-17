@@ -21,6 +21,7 @@ var (
 )
 
 func main() {
+	logger.InitLogger()
 	config.InitConfig()
 	services.Init()
 	initTCPServer()
