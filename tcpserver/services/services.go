@@ -1,8 +1,15 @@
 package services
 
+import (
+	"git.garena.com/shaoyihong/go-entry-task/tcpserver/common"
+	"git.garena.com/shaoyihong/go-entry-task/tcpserver/services/resources/user"
+)
+
 func Init() {
-	InitDB()
+	db := common.InitDB()
+	user.NewUserService(*db)
 }
+
 func TearDown() {
-	TearDownDB()
+	common.TearDownDB()
 }
