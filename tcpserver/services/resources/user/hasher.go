@@ -11,13 +11,13 @@ type IPasswordHasher interface {
 }
 
 func newPasswordHasher() IPasswordHasher {
-	return &bCryptPasswordHasher{}
+	return &bcryptPasswordHasher{}
 }
 
-type bCryptPasswordHasher struct {
+type bcryptPasswordHasher struct {
 }
 
-func (_ *bCryptPasswordHasher) hash(password string) (string, error) {
+func (_ *bcryptPasswordHasher) hash(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 	if err != nil {
 		logger.WarningLogger.Println("Failed to generate hash from password", err)
@@ -25,7 +25,7 @@ func (_ *bCryptPasswordHasher) hash(password string) (string, error) {
 	return string(hash), err
 }
 
-func (_ *bCryptPasswordHasher) comparePasswords(hashedPassword string, plainPassword string) bool {
+func (_ *bcryptPasswordHasher) comparePasswords(hashedPassword string, plainPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
 	return err == nil
 }
