@@ -1,7 +1,5 @@
 package user
 
-import "errors"
-
 type IUserValidator interface {
 	ValidateLogin(username, password string) error
 	ValidateRegistration(username, password string) error
@@ -17,9 +15,9 @@ func newUserValidator() IUserValidator {
 func validateNonEmptyUserNamePassword(username, password string) error {
 	var err error
 	if username == "" {
-		err = errors.New("username cannot be empty")
+		err = emptyUsernameError
 	} else if password == "" {
-		err = errors.New("password cannot be empty")
+		err = emptyPasswordError
 	}
 	return err
 }

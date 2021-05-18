@@ -41,10 +41,6 @@ type IPool interface {
 	// to wait for specific amount of time. If nil is passed, this will wait indefinitely until a connection is
 	// available.
 	BlockingGet() (net.Conn, error)
-
-	// Return return the connection back to the pool. If the pool is full or closed,
-	// conn is simply closed. A nil conn will be rejected.
-	Return(conn net.Conn) error
 }
 
 var (
@@ -66,27 +62,27 @@ type Pool struct {
 }
 
 // WrapConn wraps a standard net.Conn to a PoolConn net.Conn.
-func (p *Pool) WrapConn(conn net.Conn) net.Conn {
-	pc := &PoolConn{p: p}
+func (pool *Pool) WrapConn(conn net.Conn) net.Conn {
+	pc := &PoolConn{pool: pool}
 	pc.Conn = conn
 	return pc
 }
 
 // GetConnsAndFactory get conn channel and factory by once
-func (p *Pool) GetConnsAndFactory() (chan net.Conn, Factory) {
-	p.mu.RLock()
-	conns := p.conns
-	factory := p.factory
-	p.mu.RUnlock()
+func (pool *Pool) GetConnsAndFactory() (chan net.Conn, Factory) {
+	pool.mu.RLock()
+	conns := pool.conns
+	factory := pool.factory
+	pool.mu.RUnlock()
 	return conns, factory
 }
 
-func (p *Pool) AddRemainingSpace() {
-	p.remainingSpace <- true
+func (pool *Pool) AddRemainingSpace() {
+	pool.remainingSpace <- true
 }
 
-func (p *Pool) RemoveRemainingSpace() {
-	<-p.remainingSpace
+func (pool *Pool) RemoveRemainingSpace() {
+	<-pool.remainingSpace
 }
 
 // NewPool create a connection pool
@@ -96,7 +92,7 @@ func NewPool(pc *PoolConfig) (IPool, error) {
 		return nil, errors.New("invalid capacity setting")
 	}
 
-	p := &Pool{
+	pool := &Pool{
 		conns:          make(chan net.Conn, pc.MaxCap),
 		factory:        pc.Factory,
 		poolConfig:     pc,
@@ -105,29 +101,29 @@ func NewPool(pc *PoolConfig) (IPool, error) {
 
 	//fill the remainingSpace channel so we can use it for blocking calls
 	for i := 0; i < pc.MaxCap; i++ {
-		p.AddRemainingSpace()
+		pool.AddRemainingSpace()
 	}
 
 	// create initial connection, if wrong just close it
 	for i := 0; i < pc.InitCap; i++ {
 		conn, err := pc.Factory()
-		p.RemoveRemainingSpace()
+		pool.RemoveRemainingSpace()
 		if err != nil {
-			p.Close()
-			p.AddRemainingSpace()
+			pool.Close()
+			pool.AddRemainingSpace()
 			return nil, errors.New("factory is not able to fill the pool. " + err.Error())
 		}
-		p.createNum = pc.InitCap
-		p.conns <- conn
+		pool.createNum = pc.InitCap
+		pool.conns <- conn
 	}
 
-	return p, nil
+	return pool, nil
 }
 
 // Get - implement Pool get interface
 // if don't have any connection available, it will try to new one
-func (p *Pool) Get() (net.Conn, error) {
-	conns, factory := p.GetConnsAndFactory()
+func (pool *Pool) Get() (net.Conn, error) {
+	conns, factory := pool.GetConnsAndFactory()
 	if conns == nil {
 		return nil, ErrNil
 	}
@@ -140,39 +136,39 @@ func (p *Pool) Get() (net.Conn, error) {
 			return nil, ErrClosed
 		}
 
-		return p.WrapConn(conn), nil
+		return pool.WrapConn(conn), nil
 	default:
-		p.mu.Lock()
-		defer p.mu.Unlock()
-		p.createNum++
-		if p.createNum > p.poolConfig.MaxCap {
-			p.createNum--
+		pool.mu.Lock()
+		defer pool.mu.Unlock()
+		pool.createNum++
+		if pool.createNum > pool.poolConfig.MaxCap {
+			pool.createNum--
 			return nil, errors.New("more than MaxCap")
 		}
 
 		conn, err := factory()
-		p.RemoveRemainingSpace()
+		pool.RemoveRemainingSpace()
 
 		if err != nil {
-			p.AddRemainingSpace()
+			pool.AddRemainingSpace()
 			return nil, err
 		}
 
-		return p.WrapConn(conn), nil
+		return pool.WrapConn(conn), nil
 	}
 }
 
 // Return return the connection back to the pool. If the pool is full or closed,
 // conn is simply closed. A nil conn will be rejected.
-func (p *Pool) Return(conn net.Conn) error {
+func (pool *Pool) Return(conn net.Conn) error {
 	if conn == nil {
 		return errors.New("connection is nil. rejecting")
 	}
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	pool.mu.Lock()
+	defer pool.mu.Unlock()
 
-	if p.conns == nil {
+	if pool.conns == nil {
 		// pool is closed, close passed connection
 		return conn.Close()
 	}
@@ -180,7 +176,7 @@ func (p *Pool) Return(conn net.Conn) error {
 	// put the resource back into the pool. If the pool is full, this will
 	// block and the default case will be executed.
 	select {
-	case p.conns <- conn:
+	case pool.conns <- conn:
 		return nil
 	default:
 		// pool is full, close passed connection
@@ -190,12 +186,12 @@ func (p *Pool) Return(conn net.Conn) error {
 
 // Close implement Pool close interface
 // it will close all the connection in the pool
-func (p *Pool) Close() {
-	p.mu.Lock()
-	conns := p.conns
-	p.conns = nil
-	p.factory = nil
-	p.mu.Unlock()
+func (pool *Pool) Close() {
+	pool.mu.Lock()
+	conns := pool.conns
+	pool.conns = nil
+	pool.factory = nil
+	pool.mu.Unlock()
 
 	if conns == nil {
 		return
@@ -204,27 +200,27 @@ func (p *Pool) Close() {
 	close(conns)
 	for conn := range conns {
 		conn.Close()
-		p.AddRemainingSpace()
+		pool.AddRemainingSpace()
 	}
 }
 
 // Len implement Pool Len interface
 // it will return current length of the pool
-func (p *Pool) Len() int {
-	conns, _ := p.GetConnsAndFactory()
+func (pool *Pool) Len() int {
+	conns, _ := pool.GetConnsAndFactory()
 	return len(conns)
 }
 
 // BlockingGet will block until it gets an idle connection from pool. Context timeout can be passed with context
 // to wait for specific amount of time. If nil is passed, this will wait indefinitely until a connection is
 // available.
-func (p *Pool) BlockingGet() (net.Conn, error) {
-	conns, factory := p.GetConnsAndFactory()
+func (pool *Pool) BlockingGet() (net.Conn, error) {
+	conns, factory := pool.GetConnsAndFactory()
 	if conns == nil {
 		return nil, ErrNil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), p.poolConfig.WaitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), pool.poolConfig.WaitTimeout)
 	defer cancel()
 
 	// wrap our connections with out custom net.Conn implementation (WrapConn
@@ -235,20 +231,20 @@ func (p *Pool) BlockingGet() (net.Conn, error) {
 			return nil, ErrClosed
 		}
 
-		return p.WrapConn(conn), nil
-	case _ = <-p.remainingSpace:
-		p.mu.Lock()
-		defer p.mu.Unlock()
-		p.createNum++
-		//log.Info("creatNum", p.createNum, len(p.remainingSpace))
+		return pool.WrapConn(conn), nil
+	case _ = <-pool.remainingSpace:
+		pool.mu.Lock()
+		defer pool.mu.Unlock()
+		pool.createNum++
+		//log.Info("creatNum", pool.createNum, len(pool.remainingSpace))
 		conn, err := factory()
 		if err != nil {
-			p.createNum--
-			p.AddRemainingSpace()
+			pool.createNum--
+			pool.AddRemainingSpace()
 			return nil, err
 		}
 
-		return p.WrapConn(conn), nil
+		return pool.WrapConn(conn), nil
 	// if context deadline is reached, return timeout error
 	case <-ctx.Done():
 		return nil, ctx.Err()

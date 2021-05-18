@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -37,6 +38,7 @@ func (controller *UserController) LoginHandler(ctx *fasthttp.RequestCtx) {
 	response := new(pb.LoginResponse)
 
 	err := controller.client.CallMethod(pb.RpcRequest_Login, loginRequest, response)
+
 	if err != nil {
 		ctx.Error(err.Error(), http.StatusInternalServerError)
 		return
@@ -44,13 +46,17 @@ func (controller *UserController) LoginHandler(ctx *fasthttp.RequestCtx) {
 		//	http.Error(w, "something wrong happened", http.StatusOK)
 	}
 
-	exp := time.Now().AddDate(0, 0, 1)
-	cookie := fasthttp.Cookie{}
-	cookie.SetKey(username)
-	cookie.SetValue(*response.Token)
-	cookie.SetExpire(exp)
-	ctx.Response.Header.SetCookie(&cookie)
-	ctx.Response.SetBody([]byte(fmt.Sprintf("%v", response)))
+	token := response.Token
+	if token != nil {
+		exp := time.Now().AddDate(0, 0, 1)
+		cookie := fasthttp.Cookie{}
+		cookie.SetKey(username)
+		cookie.SetValue(*token)
+		cookie.SetExpire(exp)
+		ctx.Response.Header.SetCookie(&cookie)
+	}
+	jsonResponse, err := json.Marshal(response)
+	ctx.Response.SetBody(jsonResponse)
 }
 
 func (controller *UserController) LogoutHandler(ctx *fasthttp.RequestCtx) {

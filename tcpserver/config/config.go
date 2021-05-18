@@ -19,9 +19,17 @@ type DatabaseConfig struct {
 	MaxOpenConn   int    `yaml:"max_open_conn"`
 }
 
+type RedisConfig struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Password string `yaml:"password"`
+	PoolSize int    `yaml:"pool_size"`
+}
+
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Database DatabaseConfig `yaml:"database"`
+	Redis    RedisConfig    `yaml:"redis"`
 }
 
 var config Config
@@ -51,4 +59,8 @@ func GetServerConfig() ServerConfig {
 
 func GetDatabaseConfig() DatabaseConfig {
 	return config.Database
+}
+
+func GetRedisConfig() RedisConfig {
+	return config.Redis
 }

@@ -2,7 +2,6 @@ package user
 
 import (
 	"database/sql"
-	"errors"
 	"strings"
 
 	"git.garena.com/shaoyihong/go-entry-task/tcpserver/common"
@@ -55,7 +54,7 @@ func (dao *UserDAO) getByUsername(username string) (*pb.User, error) {
 	err := dao.db.QueryRow(query, username).Scan(&user.UserId, &user.Username, &user.Nickname, &user.Password, &user.ProfileImage)
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
-			err = errors.New("username not found")
+			err = usernameNotFoundError
 		}
 		return nil, err
 	}
@@ -91,7 +90,7 @@ func (dao *UserDAO) insert(username, password, nickname, imageUrl string) (*pb.U
 			VALUES (?, ?, ?, ?)`, username, password, nickname, imageUrl)
 	if err != nil {
 		if strings.Contains(err.Error(), "Duplicate entry") {
-			err = errors.New("username already exists")
+			err = usernameAlreadyExistsError
 		}
 		return nil, err
 	}

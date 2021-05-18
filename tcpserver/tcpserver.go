@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -11,11 +10,9 @@ import (
 	"sync"
 	"syscall"
 
+	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"git.garena.com/shaoyihong/go-entry-task/common/pb"
 	"git.garena.com/shaoyihong/go-entry-task/common/rpc"
-	"google.golang.org/protobuf/proto"
-
-	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
 	"git.garena.com/shaoyihong/go-entry-task/tcpserver/services"
 )
@@ -24,12 +21,13 @@ var (
 	quitChannel         = make(chan os.Signal)
 	waitGroup           = sync.WaitGroup{}
 	isShutdownInitiated = false
+	service             *services.Services
 )
 
 func main() {
 	logger.InitLogger()
 	config.InitConfig()
-	services.Init()
+	service = services.Init()
 	initTCPServer()
 }
 
@@ -87,10 +85,6 @@ func monitorForGracefulShutdown(listener io.Closer) {
 func handleConn(conn net.Conn) {
 	defer conn.Close()
 	defer waitGroup.Done()
-	deserializeRequest(conn)
-}
-
-func deserializeRequest(conn net.Conn) {
 	for {
 		messageBuffer, err := rpc.ReadMessageBufferFromConnection(conn)
 		if err != nil {
@@ -101,34 +95,17 @@ func deserializeRequest(conn net.Conn) {
 			continue
 		}
 
-		var responseBuffer bytes.Buffer
+		var responseMessage []byte
 		method := binary.BigEndian.Uint32(messageBuffer[:4])
 
 		switch method {
 		case uint32(pb.RpcRequest_Login):
-			logger.InfoLogger.Println("Login request")
-			var args pb.LoginRequest
-			err := proto.Unmarshal(messageBuffer[4:], &args)
+			responseMessage, err = service.User.Login(messageBuffer[4:])
 			if err != nil {
-				logger.ErrorLogger.Println(err)
+				logger.ErrorLogger.Println("Failed to login:", err)
 				return
 			}
-			var userId uint64 = 2
-			response := &pb.LoginResponse{
-				UserId:   &userId,
-				Username: args.Username,
-				Password: args.Password,
-				Token:    args.Username,
-			}
-			message, err := rpc.SerializeMessage(pb.RpcRequest_Login, response)
-			if err != nil {
-				logger.ErrorLogger.Println("Failed to serialize message:", err)
-				return
-			}
-
-			responseBuffer.Write(message)
 		}
-		conn.Write(responseBuffer.Bytes())
+		conn.Write(responseMessage)
 	}
-
 }

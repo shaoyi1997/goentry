@@ -54,7 +54,7 @@ func (rpcClient *RPCClient) CallMethod(method pb.RpcRequest_Method, requestMessa
 	if err != nil {
 		return err
 	}
-	defer rpcClient.connectionPool.Return(connection)
+	defer connection.Close()
 
 	if err = sendRequest(connection, serializedRequest); err != nil {
 		return err

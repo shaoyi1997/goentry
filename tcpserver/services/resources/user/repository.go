@@ -3,6 +3,7 @@ package user
 import (
 	"git.garena.com/shaoyihong/go-entry-task/common/pb"
 	"git.garena.com/shaoyihong/go-entry-task/tcpserver/common"
+	"github.com/go-redis/redis/v8"
 )
 
 type IUserRepository interface {
@@ -13,16 +14,27 @@ type IUserRepository interface {
 }
 
 type UserRepository struct {
-	dao IUserDAO
+	dao   IUserDAO
+	cache IUserCache
 }
 
-func NewUserRepository(database common.Database) IUserRepository {
+func NewUserRepository(database common.Database, redis *redis.Client) IUserRepository {
 	return &UserRepository{
-		dao: newUserDAO(database),
+		dao:   newUserDAO(database),
+		cache: newUserCache(redis),
 	}
 }
 func (repo *UserRepository) GetByUsername(username string) (*pb.User, error) {
-	return repo.dao.getByUsername(username)
+	user := repo.cache.getCacheUser(username)
+	if user != nil {
+		return user, nil
+	}
+	user, err := repo.dao.getByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	repo.cache.setCacheUser(user)
+	return user, nil
 }
 
 func (repo *UserRepository) UpdateNickname(username, nickname string) error {
@@ -34,5 +46,9 @@ func (repo *UserRepository) UpdateProfileImage(username, imageUrl string) error 
 }
 
 func (repo *UserRepository) Insert(username, password, nickname, imageUrl string) (*pb.User, error) {
-	return repo.dao.insert(username, password, nickname, imageUrl)
+	user, err := repo.dao.insert(username, password, nickname, imageUrl)
+	if err == nil && user != nil {
+		repo.cache.setCacheUser(user)
+	}
+	return user, err
 }

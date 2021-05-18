@@ -8,3 +8,8 @@ database:
   max_idle_conn: 20
   max_open_conn: 100
 
+redis:
+  pool_size: 2000
+  host: localhost
+  port: 6379
+  password:

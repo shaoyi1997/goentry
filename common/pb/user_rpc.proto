@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-//import "user.proto";
+import "user.proto";
 
 option go_package = "git.garena.com/shaoyi.hong/go-entry-task/pb";
 
@@ -22,10 +22,16 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  required uint64 user_id = 1;
-  required string username = 2;
-  required string password = 3;
-  required string token = 4;
+  enum ErrorCode {
+    InvalidUsername = 1;
+    InvalidPassword = 2;
+    MissingCredentials = 3;
+    InternalServerError = 4;
+  }
+
+  optional User user = 1;
+  optional string token = 2;
+  optional ErrorCode error = 3;
 }
 
 message LogoutRequest {

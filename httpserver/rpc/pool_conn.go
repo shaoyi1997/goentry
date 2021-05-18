@@ -10,7 +10,7 @@ type PoolConn struct {
 	// wrap real connection
 	net.Conn
 	// pool
-	p *Pool
+	pool *Pool
 	// sync pool put or get
 	mu sync.RWMutex
 	// identify an CConn usable or can close
@@ -18,23 +18,23 @@ type PoolConn struct {
 }
 
 // Close puts the given connects back to the pool instead of closing it.
-func (pc *PoolConn) Close() error {
-	pc.mu.RLock()
-	defer pc.mu.RUnlock()
+func (poolConn *PoolConn) Close() error {
+	poolConn.mu.RLock()
+	defer poolConn.mu.RUnlock()
 
-	if pc.unusable {
-		if pc.Conn != nil {
-			pc.p.AddRemainingSpace()
-			return pc.Conn.Close()
+	if poolConn.unusable {
+		if poolConn.Conn != nil {
+			poolConn.pool.AddRemainingSpace()
+			return poolConn.Conn.Close()
 		}
 		return nil
 	}
-	return pc.p.Return(pc.Conn)
+	return poolConn.pool.Return(poolConn.Conn)
 }
 
 // MarkUnusable marks the connection not usable any more, to let the pool close it instead of returning it to pool.
-func (pc *PoolConn) MarkUnusable() {
-	pc.mu.Lock()
-	pc.unusable = true
-	pc.mu.Unlock()
+func (poolConn *PoolConn) MarkUnusable() {
+	poolConn.mu.Lock()
+	poolConn.unusable = true
+	poolConn.mu.Unlock()
 }
