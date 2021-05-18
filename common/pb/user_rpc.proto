@@ -21,7 +21,7 @@ message LoginRequest {
   required string password = 2;
 }
 
-message LoginResponse {
+message LoginRegisterResponse {
   enum ErrorCode {
     InvalidUsername = 1;
     InvalidPassword = 2;
@@ -35,7 +35,18 @@ message LoginResponse {
 }
 
 message LogoutRequest {
-  required uint64 user_id = 1;
+  required string username = 1;
+  required string token = 2;
+}
+
+message LogoutResponse {
+  enum ErrorCode {
+    MissingUsername = 1;
+    InternalServerError = 2;
+  }
+
+  required bool Success = 1;
+  optional ErrorCode error = 2;
 }
 
 message UpdateRequest {
@@ -48,3 +59,4 @@ message RegisterRequest {
   required string password = 2;
   optional string nickname = 3;
 }
+

@@ -85,24 +85,24 @@ func (RpcRequest_Method) EnumDescriptor() ([]byte, []int) {
 	return file_user_rpc_proto_rawDescGZIP(), []int{0, 0}
 }
 
-type LoginResponse_ErrorCode int32
+type LoginRegisterResponse_ErrorCode int32
 
 const (
-	LoginResponse_InvalidUsername     LoginResponse_ErrorCode = 1
-	LoginResponse_InvalidPassword     LoginResponse_ErrorCode = 2
-	LoginResponse_MissingCredentials  LoginResponse_ErrorCode = 3
-	LoginResponse_InternalServerError LoginResponse_ErrorCode = 4
+	LoginRegisterResponse_InvalidUsername     LoginRegisterResponse_ErrorCode = 1
+	LoginRegisterResponse_InvalidPassword     LoginRegisterResponse_ErrorCode = 2
+	LoginRegisterResponse_MissingCredentials  LoginRegisterResponse_ErrorCode = 3
+	LoginRegisterResponse_InternalServerError LoginRegisterResponse_ErrorCode = 4
 )
 
-// Enum value maps for LoginResponse_ErrorCode.
+// Enum value maps for LoginRegisterResponse_ErrorCode.
 var (
-	LoginResponse_ErrorCode_name = map[int32]string{
+	LoginRegisterResponse_ErrorCode_name = map[int32]string{
 		1: "InvalidUsername",
 		2: "InvalidPassword",
 		3: "MissingCredentials",
 		4: "InternalServerError",
 	}
-	LoginResponse_ErrorCode_value = map[string]int32{
+	LoginRegisterResponse_ErrorCode_value = map[string]int32{
 		"InvalidUsername":     1,
 		"InvalidPassword":     2,
 		"MissingCredentials":  3,
@@ -110,41 +110,97 @@ var (
 	}
 )
 
-func (x LoginResponse_ErrorCode) Enum() *LoginResponse_ErrorCode {
-	p := new(LoginResponse_ErrorCode)
+func (x LoginRegisterResponse_ErrorCode) Enum() *LoginRegisterResponse_ErrorCode {
+	p := new(LoginRegisterResponse_ErrorCode)
 	*p = x
 	return p
 }
 
-func (x LoginResponse_ErrorCode) String() string {
+func (x LoginRegisterResponse_ErrorCode) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (LoginResponse_ErrorCode) Descriptor() protoreflect.EnumDescriptor {
+func (LoginRegisterResponse_ErrorCode) Descriptor() protoreflect.EnumDescriptor {
 	return file_user_rpc_proto_enumTypes[1].Descriptor()
 }
 
-func (LoginResponse_ErrorCode) Type() protoreflect.EnumType {
+func (LoginRegisterResponse_ErrorCode) Type() protoreflect.EnumType {
 	return &file_user_rpc_proto_enumTypes[1]
 }
 
-func (x LoginResponse_ErrorCode) Number() protoreflect.EnumNumber {
+func (x LoginRegisterResponse_ErrorCode) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
 // Deprecated: Do not use.
-func (x *LoginResponse_ErrorCode) UnmarshalJSON(b []byte) error {
+func (x *LoginRegisterResponse_ErrorCode) UnmarshalJSON(b []byte) error {
 	num, err := protoimpl.X.UnmarshalJSONEnum(x.Descriptor(), b)
 	if err != nil {
 		return err
 	}
-	*x = LoginResponse_ErrorCode(num)
+	*x = LoginRegisterResponse_ErrorCode(num)
 	return nil
 }
 
-// Deprecated: Use LoginResponse_ErrorCode.Descriptor instead.
-func (LoginResponse_ErrorCode) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use LoginRegisterResponse_ErrorCode.Descriptor instead.
+func (LoginRegisterResponse_ErrorCode) EnumDescriptor() ([]byte, []int) {
 	return file_user_rpc_proto_rawDescGZIP(), []int{2, 0}
+}
+
+type LogoutResponse_ErrorCode int32
+
+const (
+	LogoutResponse_MissingUsername     LogoutResponse_ErrorCode = 1
+	LogoutResponse_InternalServerError LogoutResponse_ErrorCode = 2
+)
+
+// Enum value maps for LogoutResponse_ErrorCode.
+var (
+	LogoutResponse_ErrorCode_name = map[int32]string{
+		1: "MissingUsername",
+		2: "InternalServerError",
+	}
+	LogoutResponse_ErrorCode_value = map[string]int32{
+		"MissingUsername":     1,
+		"InternalServerError": 2,
+	}
+)
+
+func (x LogoutResponse_ErrorCode) Enum() *LogoutResponse_ErrorCode {
+	p := new(LogoutResponse_ErrorCode)
+	*p = x
+	return p
+}
+
+func (x LogoutResponse_ErrorCode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (LogoutResponse_ErrorCode) Descriptor() protoreflect.EnumDescriptor {
+	return file_user_rpc_proto_enumTypes[2].Descriptor()
+}
+
+func (LogoutResponse_ErrorCode) Type() protoreflect.EnumType {
+	return &file_user_rpc_proto_enumTypes[2]
+}
+
+func (x LogoutResponse_ErrorCode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Do not use.
+func (x *LogoutResponse_ErrorCode) UnmarshalJSON(b []byte) error {
+	num, err := protoimpl.X.UnmarshalJSONEnum(x.Descriptor(), b)
+	if err != nil {
+		return err
+	}
+	*x = LogoutResponse_ErrorCode(num)
+	return nil
+}
+
+// Deprecated: Use LogoutResponse_ErrorCode.Descriptor instead.
+func (LogoutResponse_ErrorCode) EnumDescriptor() ([]byte, []int) {
+	return file_user_rpc_proto_rawDescGZIP(), []int{4, 0}
 }
 
 type RpcRequest struct {
@@ -257,18 +313,18 @@ func (x *LoginRequest) GetPassword() string {
 	return ""
 }
 
-type LoginResponse struct {
+type LoginRegisterResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	User  *User                    `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
-	Token *string                  `protobuf:"bytes,2,opt,name=token" json:"token,omitempty"`
-	Error *LoginResponse_ErrorCode `protobuf:"varint,3,opt,name=error,enum=LoginResponse_ErrorCode" json:"error,omitempty"`
+	User  *User                            `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
+	Token *string                          `protobuf:"bytes,2,opt,name=token" json:"token,omitempty"`
+	Error *LoginRegisterResponse_ErrorCode `protobuf:"varint,3,opt,name=error,enum=LoginRegisterResponse_ErrorCode" json:"error,omitempty"`
 }
 
-func (x *LoginResponse) Reset() {
-	*x = LoginResponse{}
+func (x *LoginRegisterResponse) Reset() {
+	*x = LoginRegisterResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_user_rpc_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -276,13 +332,13 @@ func (x *LoginResponse) Reset() {
 	}
 }
 
-func (x *LoginResponse) String() string {
+func (x *LoginRegisterResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LoginResponse) ProtoMessage() {}
+func (*LoginRegisterResponse) ProtoMessage() {}
 
-func (x *LoginResponse) ProtoReflect() protoreflect.Message {
+func (x *LoginRegisterResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_user_rpc_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -294,30 +350,30 @@ func (x *LoginResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
-func (*LoginResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use LoginRegisterResponse.ProtoReflect.Descriptor instead.
+func (*LoginRegisterResponse) Descriptor() ([]byte, []int) {
 	return file_user_rpc_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *LoginResponse) GetUser() *User {
+func (x *LoginRegisterResponse) GetUser() *User {
 	if x != nil {
 		return x.User
 	}
 	return nil
 }
 
-func (x *LoginResponse) GetToken() string {
+func (x *LoginRegisterResponse) GetToken() string {
 	if x != nil && x.Token != nil {
 		return *x.Token
 	}
 	return ""
 }
 
-func (x *LoginResponse) GetError() LoginResponse_ErrorCode {
+func (x *LoginRegisterResponse) GetError() LoginRegisterResponse_ErrorCode {
 	if x != nil && x.Error != nil {
 		return *x.Error
 	}
-	return LoginResponse_InvalidUsername
+	return LoginRegisterResponse_InvalidUsername
 }
 
 type LogoutRequest struct {
@@ -325,7 +381,8 @@ type LogoutRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId *uint64 `protobuf:"varint,1,req,name=user_id,json=userId" json:"user_id,omitempty"`
+	Username *string `protobuf:"bytes,1,req,name=username" json:"username,omitempty"`
+	Token    *string `protobuf:"bytes,2,req,name=token" json:"token,omitempty"`
 }
 
 func (x *LogoutRequest) Reset() {
@@ -360,11 +417,73 @@ func (*LogoutRequest) Descriptor() ([]byte, []int) {
 	return file_user_rpc_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *LogoutRequest) GetUserId() uint64 {
-	if x != nil && x.UserId != nil {
-		return *x.UserId
+func (x *LogoutRequest) GetUsername() string {
+	if x != nil && x.Username != nil {
+		return *x.Username
 	}
-	return 0
+	return ""
+}
+
+func (x *LogoutRequest) GetToken() string {
+	if x != nil && x.Token != nil {
+		return *x.Token
+	}
+	return ""
+}
+
+type LogoutResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Success *bool                     `protobuf:"varint,1,req,name=Success" json:"Success,omitempty"`
+	Error   *LogoutResponse_ErrorCode `protobuf:"varint,2,opt,name=error,enum=LogoutResponse_ErrorCode" json:"error,omitempty"`
+}
+
+func (x *LogoutResponse) Reset() {
+	*x = LogoutResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_user_rpc_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *LogoutResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LogoutResponse) ProtoMessage() {}
+
+func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_rpc_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
+func (*LogoutResponse) Descriptor() ([]byte, []int) {
+	return file_user_rpc_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *LogoutResponse) GetSuccess() bool {
+	if x != nil && x.Success != nil {
+		return *x.Success
+	}
+	return false
+}
+
+func (x *LogoutResponse) GetError() LogoutResponse_ErrorCode {
+	if x != nil && x.Error != nil {
+		return *x.Error
+	}
+	return LogoutResponse_MissingUsername
 }
 
 type UpdateRequest struct {
@@ -379,7 +498,7 @@ type UpdateRequest struct {
 func (x *UpdateRequest) Reset() {
 	*x = UpdateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_user_rpc_proto_msgTypes[4]
+		mi := &file_user_rpc_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -392,7 +511,7 @@ func (x *UpdateRequest) String() string {
 func (*UpdateRequest) ProtoMessage() {}
 
 func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_rpc_proto_msgTypes[4]
+	mi := &file_user_rpc_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -405,7 +524,7 @@ func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRequest) Descriptor() ([]byte, []int) {
-	return file_user_rpc_proto_rawDescGZIP(), []int{4}
+	return file_user_rpc_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdateRequest) GetUserId() uint64 {
@@ -435,7 +554,7 @@ type RegisterRequest struct {
 func (x *RegisterRequest) Reset() {
 	*x = RegisterRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_user_rpc_proto_msgTypes[5]
+		mi := &file_user_rpc_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -448,7 +567,7 @@ func (x *RegisterRequest) String() string {
 func (*RegisterRequest) ProtoMessage() {}
 
 func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_rpc_proto_msgTypes[5]
+	mi := &file_user_rpc_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -461,7 +580,7 @@ func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterRequest.ProtoReflect.Descriptor instead.
 func (*RegisterRequest) Descriptor() ([]byte, []int) {
-	return file_user_rpc_proto_rawDescGZIP(), []int{5}
+	return file_user_rpc_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RegisterRequest) GetUsername() string {
@@ -503,13 +622,14 @@ var file_user_rpc_proto_rawDesc = []byte{
 	0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65,
 	0x18, 0x01, 0x20, 0x02, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65,
 	0x12, 0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x18, 0x02, 0x20, 0x02,
-	0x28, 0x09, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x22, 0xd8, 0x01, 0x0a,
-	0x0d, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x19,
-	0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x05, 0x2e, 0x55,
-	0x73, 0x65, 0x72, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x6b,
-	0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x12,
-	0x2e, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x18,
-	0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x45,
+	0x28, 0x09, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x22, 0xe8, 0x01, 0x0a,
+	0x15, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x19, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x05, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x52, 0x04, 0x75, 0x73, 0x65,
+	0x72, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x12, 0x36, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x20, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x45,
 	0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22,
 	0x66, 0x0a, 0x09, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64, 0x65, 0x12, 0x13, 0x0a, 0x0f,
 	0x49, 0x6e, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x55, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x10,
@@ -517,23 +637,34 @@ var file_user_rpc_proto_rawDesc = []byte{
 	0x77, 0x6f, 0x72, 0x64, 0x10, 0x02, 0x12, 0x16, 0x0a, 0x12, 0x4d, 0x69, 0x73, 0x73, 0x69, 0x6e,
 	0x67, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x10, 0x03, 0x12, 0x17,
 	0x0a, 0x13, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72,
-	0x45, 0x72, 0x72, 0x6f, 0x72, 0x10, 0x04, 0x22, 0x28, 0x0a, 0x0d, 0x4c, 0x6f, 0x67, 0x6f, 0x75,
-	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x02, 0x28, 0x04, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49,
-	0x64, 0x22, 0x44, 0x0a, 0x0d, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x02, 0x28, 0x04, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x6e,
-	0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x02, 0x28, 0x09, 0x52, 0x08, 0x6e,
-	0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x65, 0x0a, 0x0f, 0x52, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73,
-	0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x02, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73,
-	0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f,
-	0x72, 0x64, 0x18, 0x02, 0x20, 0x02, 0x28, 0x09, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f,
-	0x72, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x2d,
-	0x5a, 0x2b, 0x67, 0x69, 0x74, 0x2e, 0x67, 0x61, 0x72, 0x65, 0x6e, 0x61, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x73, 0x68, 0x61, 0x6f, 0x79, 0x69, 0x2e, 0x68, 0x6f, 0x6e, 0x67, 0x2f, 0x67, 0x6f, 0x2d,
-	0x65, 0x6e, 0x74, 0x72, 0x79, 0x2d, 0x74, 0x61, 0x73, 0x6b, 0x2f, 0x70, 0x62,
+	0x45, 0x72, 0x72, 0x6f, 0x72, 0x10, 0x04, 0x22, 0x41, 0x0a, 0x0d, 0x4c, 0x6f, 0x67, 0x6f, 0x75,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72,
+	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x02, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72,
+	0x6e, 0x61, 0x6d, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20,
+	0x02, 0x28, 0x09, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x96, 0x01, 0x0a, 0x0e, 0x4c,
+	0x6f, 0x67, 0x6f, 0x75, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a,
+	0x07, 0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x02, 0x28, 0x08, 0x52, 0x07,
+	0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x2f, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x19, 0x2e, 0x4c, 0x6f, 0x67, 0x6f, 0x75, 0x74, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64,
+	0x65, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22, 0x39, 0x0a, 0x09, 0x45, 0x72, 0x72, 0x6f,
+	0x72, 0x43, 0x6f, 0x64, 0x65, 0x12, 0x13, 0x0a, 0x0f, 0x4d, 0x69, 0x73, 0x73, 0x69, 0x6e, 0x67,
+	0x55, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x10, 0x01, 0x12, 0x17, 0x0a, 0x13, 0x49, 0x6e,
+	0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x45, 0x72, 0x72, 0x6f,
+	0x72, 0x10, 0x02, 0x22, 0x44, 0x0a, 0x0d, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x02, 0x28, 0x04, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x1a, 0x0a,
+	0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x02, 0x28, 0x09, 0x52,
+	0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x65, 0x0a, 0x0f, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08,
+	0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x02, 0x28, 0x09, 0x52, 0x08,
+	0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73, 0x73,
+	0x77, 0x6f, 0x72, 0x64, 0x18, 0x02, 0x20, 0x02, 0x28, 0x09, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73,
+	0x77, 0x6f, 0x72, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65,
+	0x42, 0x2d, 0x5a, 0x2b, 0x67, 0x69, 0x74, 0x2e, 0x67, 0x61, 0x72, 0x65, 0x6e, 0x61, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x73, 0x68, 0x61, 0x6f, 0x79, 0x69, 0x2e, 0x68, 0x6f, 0x6e, 0x67, 0x2f, 0x67,
+	0x6f, 0x2d, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x2d, 0x74, 0x61, 0x73, 0x6b, 0x2f, 0x70, 0x62,
 }
 
 var (
@@ -548,28 +679,31 @@ func file_user_rpc_proto_rawDescGZIP() []byte {
 	return file_user_rpc_proto_rawDescData
 }
 
-var file_user_rpc_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_user_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_user_rpc_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_user_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_user_rpc_proto_goTypes = []interface{}{
-	(RpcRequest_Method)(0),       // 0: RpcRequest.Method
-	(LoginResponse_ErrorCode)(0), // 1: LoginResponse.ErrorCode
-	(*RpcRequest)(nil),           // 2: RpcRequest
-	(*LoginRequest)(nil),         // 3: LoginRequest
-	(*LoginResponse)(nil),        // 4: LoginResponse
-	(*LogoutRequest)(nil),        // 5: LogoutRequest
-	(*UpdateRequest)(nil),        // 6: UpdateRequest
-	(*RegisterRequest)(nil),      // 7: RegisterRequest
-	(*User)(nil),                 // 8: User
+	(RpcRequest_Method)(0),               // 0: RpcRequest.Method
+	(LoginRegisterResponse_ErrorCode)(0), // 1: LoginRegisterResponse.ErrorCode
+	(LogoutResponse_ErrorCode)(0),        // 2: LogoutResponse.ErrorCode
+	(*RpcRequest)(nil),                   // 3: RpcRequest
+	(*LoginRequest)(nil),                 // 4: LoginRequest
+	(*LoginRegisterResponse)(nil),        // 5: LoginRegisterResponse
+	(*LogoutRequest)(nil),                // 6: LogoutRequest
+	(*LogoutResponse)(nil),               // 7: LogoutResponse
+	(*UpdateRequest)(nil),                // 8: UpdateRequest
+	(*RegisterRequest)(nil),              // 9: RegisterRequest
+	(*User)(nil),                         // 10: User
 }
 var file_user_rpc_proto_depIdxs = []int32{
-	0, // 0: RpcRequest.method:type_name -> RpcRequest.Method
-	8, // 1: LoginResponse.user:type_name -> User
-	1, // 2: LoginResponse.error:type_name -> LoginResponse.ErrorCode
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	0,  // 0: RpcRequest.method:type_name -> RpcRequest.Method
+	10, // 1: LoginRegisterResponse.user:type_name -> User
+	1,  // 2: LoginRegisterResponse.error:type_name -> LoginRegisterResponse.ErrorCode
+	2,  // 3: LogoutResponse.error:type_name -> LogoutResponse.ErrorCode
+	4,  // [4:4] is the sub-list for method output_type
+	4,  // [4:4] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_user_rpc_proto_init() }
@@ -604,7 +738,7 @@ func file_user_rpc_proto_init() {
 			}
 		}
 		file_user_rpc_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LoginResponse); i {
+			switch v := v.(*LoginRegisterResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -628,7 +762,7 @@ func file_user_rpc_proto_init() {
 			}
 		}
 		file_user_rpc_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateRequest); i {
+			switch v := v.(*LogoutResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -640,6 +774,18 @@ func file_user_rpc_proto_init() {
 			}
 		}
 		file_user_rpc_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_user_rpc_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RegisterRequest); i {
 			case 0:
 				return &v.state
@@ -657,8 +803,8 @@ func file_user_rpc_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_user_rpc_proto_rawDesc,
-			NumEnums:      2,
-			NumMessages:   6,
+			NumEnums:      3,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

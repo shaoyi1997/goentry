@@ -30,6 +30,7 @@ func InitRedis() *redis.Client {
 }
 
 func TearDownRedis() {
+	logger.InfoLogger.Println("Closing redis connection")
 	err := redisClient.Close()
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to close redis:", err)

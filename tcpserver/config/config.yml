@@ -5,8 +5,8 @@ database:
   driver: mysql
   name: go_entry_task_db
   connection_url: root:Garena.com@tcp(127.0.0.1:3306)/mysql
-  max_idle_conn: 20
-  max_open_conn: 100
+  max_idle_conn: 151
+  max_open_conn: 151
 
 redis:
   pool_size: 2000

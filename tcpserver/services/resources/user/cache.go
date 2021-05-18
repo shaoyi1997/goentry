@@ -11,8 +11,6 @@ import (
 )
 
 type IUserCache interface {
-	setCacheToken(token, username string) error
-	getCacheToken(token string) (string, error)
 	setCacheUser(user *pb.User) error
 	getCacheUser(username string) *pb.User
 }
@@ -23,21 +21,6 @@ type UserCache struct {
 
 func newUserCache(redis *redis.Client) IUserCache {
 	return &UserCache{redis: redis}
-}
-
-func (cache *UserCache) setCacheToken(token, username string) error {
-	if err := cache.redis.Set(context.Background(), token, username, time.Minute*5).Err(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (cache *UserCache) getCacheToken(token string) (string, error) {
-	username, err := cache.redis.Get(context.Background(), token).Result()
-	if err != nil {
-		return "", err
-	}
-	return username, nil
 }
 
 func (cache *UserCache) setCacheUser(user *pb.User) error {

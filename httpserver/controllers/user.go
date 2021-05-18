@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"git.garena.com/shaoyihong/go-entry-task/httpserver/rpc"
 
 	"git.garena.com/shaoyihong/go-entry-task/common/pb"
@@ -18,12 +17,8 @@ type UserController struct {
 	client rpc.IRPCClient
 }
 
-func NewUserController() UserController {
-	client, err := rpc.NewRPCClient()
-	if err != nil {
-		logger.ErrorLogger.Panicln("Failed to create rpc client:", err)
-	}
-	return UserController{client: client}
+func NewUserController(rpcClient rpc.IRPCClient) UserController {
+	return UserController{client: rpcClient}
 }
 
 func (controller *UserController) LoginHandler(ctx *fasthttp.RequestCtx) {
@@ -35,15 +30,13 @@ func (controller *UserController) LoginHandler(ctx *fasthttp.RequestCtx) {
 		Password: &password,
 	}
 
-	response := new(pb.LoginResponse)
+	response := new(pb.LoginRegisterResponse)
 
 	err := controller.client.CallMethod(pb.RpcRequest_Login, loginRequest, response)
 
 	if err != nil {
 		ctx.Error(err.Error(), http.StatusInternalServerError)
 		return
-		//} else if response.ErrorCode != uint32(protos.Constant_ERROR_CODE_OK) {
-		//	http.Error(w, "something wrong happened", http.StatusOK)
 	}
 
 	token := response.Token

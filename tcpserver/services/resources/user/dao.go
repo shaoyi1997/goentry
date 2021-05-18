@@ -53,9 +53,10 @@ func (dao *UserDAO) getByUsername(username string) (*pb.User, error) {
 	user := new(pb.User)
 	err := dao.db.QueryRow(query, username).Scan(&user.UserId, &user.Username, &user.Nickname, &user.Password, &user.ProfileImage)
 	if err != nil {
-		if strings.Contains(err.Error(), "no rows in result set") {
+		if err == sql.ErrNoRows {
 			err = usernameNotFoundError
 		}
+		logger.ErrorLogger.Println("Failed to get user:", err)
 		return nil, err
 	}
 	return user, nil

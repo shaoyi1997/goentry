@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 	"time"
+
+	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 )
 
 // Factory generate a new connection
@@ -26,11 +28,7 @@ type PoolConfig struct {
 	Factory Factory
 }
 
-// IPool is interface which all type of pool need to implement
 type IPool interface {
-	// Get returns a new connection from pool.
-	Get() (net.Conn, error)
-
 	// Close close the pool and reclaim all the connections.
 	Close()
 
@@ -52,23 +50,20 @@ var (
 
 // Pool store connections and pool info
 type Pool struct {
-	conns      chan net.Conn
-	factory    Factory
-	mu         sync.RWMutex
-	poolConfig *PoolConfig
-	createNum  int
-	//will be used for blocking calls
-	remainingSpace chan bool
+	conns                       chan net.Conn
+	factory                     Factory
+	mu                          sync.RWMutex
+	poolConfig                  *PoolConfig
+	createNum                   int
+	availableSlotsForConnection chan bool
 }
 
-// WrapConn wraps a standard net.Conn to a PoolConn net.Conn.
 func (pool *Pool) WrapConn(conn net.Conn) net.Conn {
 	pc := &PoolConn{pool: pool}
 	pc.Conn = conn
 	return pc
 }
 
-// GetConnsAndFactory get conn channel and factory by once
 func (pool *Pool) GetConnsAndFactory() (chan net.Conn, Factory) {
 	pool.mu.RLock()
 	conns := pool.conns
@@ -78,11 +73,11 @@ func (pool *Pool) GetConnsAndFactory() (chan net.Conn, Factory) {
 }
 
 func (pool *Pool) AddRemainingSpace() {
-	pool.remainingSpace <- true
+	pool.availableSlotsForConnection <- true
 }
 
 func (pool *Pool) RemoveRemainingSpace() {
-	<-pool.remainingSpace
+	<-pool.availableSlotsForConnection
 }
 
 // NewPool create a connection pool
@@ -93,13 +88,13 @@ func NewPool(pc *PoolConfig) (IPool, error) {
 	}
 
 	pool := &Pool{
-		conns:          make(chan net.Conn, pc.MaxCap),
-		factory:        pc.Factory,
-		poolConfig:     pc,
-		remainingSpace: make(chan bool, pc.MaxCap),
+		conns:                       make(chan net.Conn, pc.MaxCap),
+		factory:                     pc.Factory,
+		poolConfig:                  pc,
+		availableSlotsForConnection: make(chan bool, pc.MaxCap),
 	}
 
-	//fill the remainingSpace channel so we can use it for blocking calls
+	//fill the availableSlotsForConnection channel so we can use it for blocking calls
 	for i := 0; i < pc.MaxCap; i++ {
 		pool.AddRemainingSpace()
 	}
@@ -113,49 +108,10 @@ func NewPool(pc *PoolConfig) (IPool, error) {
 			pool.AddRemainingSpace()
 			return nil, errors.New("factory is not able to fill the pool. " + err.Error())
 		}
-		pool.createNum = pc.InitCap
 		pool.conns <- conn
 	}
 
 	return pool, nil
-}
-
-// Get - implement Pool get interface
-// if don't have any connection available, it will try to new one
-func (pool *Pool) Get() (net.Conn, error) {
-	conns, factory := pool.GetConnsAndFactory()
-	if conns == nil {
-		return nil, ErrNil
-	}
-
-	// wrap our connections with out custom net.Conn implementation (wrapConn
-	// method) that puts the connection back to the pool if it's closed.
-	select {
-	case conn := <-conns:
-		if conn == nil {
-			return nil, ErrClosed
-		}
-
-		return pool.WrapConn(conn), nil
-	default:
-		pool.mu.Lock()
-		defer pool.mu.Unlock()
-		pool.createNum++
-		if pool.createNum > pool.poolConfig.MaxCap {
-			pool.createNum--
-			return nil, errors.New("more than MaxCap")
-		}
-
-		conn, err := factory()
-		pool.RemoveRemainingSpace()
-
-		if err != nil {
-			pool.AddRemainingSpace()
-			return nil, err
-		}
-
-		return pool.WrapConn(conn), nil
-	}
 }
 
 // Return return the connection back to the pool. If the pool is full or closed,
@@ -200,8 +156,8 @@ func (pool *Pool) Close() {
 	close(conns)
 	for conn := range conns {
 		conn.Close()
-		pool.AddRemainingSpace()
 	}
+	logger.InfoLogger.Println("Connection pool successfully closed")
 }
 
 // Len implement Pool Len interface
@@ -223,8 +179,6 @@ func (pool *Pool) BlockingGet() (net.Conn, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), pool.poolConfig.WaitTimeout)
 	defer cancel()
 
-	// wrap our connections with out custom net.Conn implementation (WrapConn
-	// method) that puts the connection back to the pool if it's closed.
 	select {
 	case conn := <-conns:
 		if conn == nil {
@@ -232,14 +186,12 @@ func (pool *Pool) BlockingGet() (net.Conn, error) {
 		}
 
 		return pool.WrapConn(conn), nil
-	case _ = <-pool.remainingSpace:
+	case _ = <-pool.availableSlotsForConnection:
 		pool.mu.Lock()
 		defer pool.mu.Unlock()
-		pool.createNum++
-		//log.Info("creatNum", pool.createNum, len(pool.remainingSpace))
+
 		conn, err := factory()
 		if err != nil {
-			pool.createNum--
 			pool.AddRemainingSpace()
 			return nil, err
 		}

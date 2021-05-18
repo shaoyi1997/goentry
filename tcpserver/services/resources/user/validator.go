@@ -1,8 +1,9 @@
 package user
 
 type IUserValidator interface {
-	ValidateLogin(username, password string) error
-	ValidateRegistration(username, password string) error
+	ValidateNonEmptyUsernamePassword(username, password string) error
+	ValidateLogout(username string) error
+	ValidateRegister(username, password string) error
 }
 
 type userValidator struct {
@@ -12,7 +13,7 @@ func newUserValidator() IUserValidator {
 	return &userValidator{}
 }
 
-func validateNonEmptyUserNamePassword(username, password string) error {
+func (validator *userValidator) ValidateNonEmptyUsernamePassword(username, password string) error {
 	var err error
 	if username == "" {
 		err = emptyUsernameError
@@ -22,18 +23,20 @@ func validateNonEmptyUserNamePassword(username, password string) error {
 	return err
 }
 
-func (validator *userValidator) ValidateLogin(username, password string) error {
-	err := validateNonEmptyUserNamePassword(username, password)
+func (validator *userValidator) ValidateRegister(username, password string) error {
+	err := validator.ValidateNonEmptyUsernamePassword(username, password)
 	if err != nil {
 		return err
+	}
+	if len(password) < 4 {
+		return tooShortPasswordError
 	}
 	return nil
 }
 
-func (validator *userValidator) ValidateRegistration(username, password string) error {
-	err := validateNonEmptyUserNamePassword(username, password)
-	if err != nil {
-		return err
+func (validator *userValidator) ValidateLogout(username string) error {
+	if username == "" {
+		return emptyUsernameError
 	}
 	return nil
 }

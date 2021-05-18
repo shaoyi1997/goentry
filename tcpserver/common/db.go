@@ -55,7 +55,7 @@ func createDB(databaseConfig config.DatabaseConfig) {
 }
 
 func TearDownDB() {
-	logger.InfoLogger.Println("Tearing down DB connection")
+	logger.InfoLogger.Println("Closing DB connection")
 	if err := db.Close(); err != nil {
 		logger.ErrorLogger.Println(err)
 	}

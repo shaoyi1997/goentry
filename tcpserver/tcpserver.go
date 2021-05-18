@@ -89,7 +89,6 @@ func handleConn(conn net.Conn) {
 		messageBuffer, err := rpc.ReadMessageBufferFromConnection(conn)
 		if err != nil {
 			if err == io.EOF {
-				logger.ErrorLogger.Println("Failed to read length of request", err)
 				return
 			}
 			continue
@@ -103,9 +102,12 @@ func handleConn(conn net.Conn) {
 			responseMessage, err = service.User.Login(messageBuffer[4:])
 			if err != nil {
 				logger.ErrorLogger.Println("Failed to login:", err)
-				return
 			}
 		}
-		conn.Write(responseMessage)
+		_, err = conn.Write(responseMessage)
+		if err != nil {
+			logger.ErrorLogger.Println("Failed to write response:", err)
+			return
+		}
 	}
 }
