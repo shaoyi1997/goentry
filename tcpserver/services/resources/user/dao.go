@@ -99,6 +99,7 @@ func (dao *UserDAO) insert(username, password, nickname, imageUrl string) (*pb.U
 	if err != nil {
 		return nil, err
 	}
-	user.UserId = &id
+	unsignedId := uint64(id)
+	user.UserId = &unsignedId
 	return user, nil
 }

@@ -1,0 +1,11 @@
+server:
+  port: 80
+  tcp_address: 127.0.0.1:8000
+
+pool:
+  initial_capacity: 500
+  max_capacity: 3000
+  wait_timeout: 5
+  idle_timeout: 0
+
+

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"net"
@@ -8,6 +10,10 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"git.garena.com/shaoyihong/go-entry-task/common/pb"
+	"git.garena.com/shaoyihong/go-entry-task/common/rpc"
+	"google.golang.org/protobuf/proto"
 
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
@@ -81,12 +87,48 @@ func monitorForGracefulShutdown(listener io.Closer) {
 func handleConn(conn net.Conn) {
 	defer conn.Close()
 	defer waitGroup.Done()
+	deserializeRequest(conn)
+}
 
-	//for {
-	//	_, err := io.WriteString(conn, time.Now().Format("15:04:05\n"))
-	//	if err != nil {
-	//		return // e.g., client disconnected
-	//	}
-	//	time.Sleep(1 * time.Second)
-	//}
+func deserializeRequest(conn net.Conn) {
+	for {
+		messageBuffer, err := rpc.ReadMessageBufferFromConnection(conn)
+		if err != nil {
+			if err == io.EOF {
+				logger.ErrorLogger.Println("Failed to read length of request", err)
+				return
+			}
+			continue
+		}
+
+		var responseBuffer bytes.Buffer
+		method := binary.BigEndian.Uint32(messageBuffer[:4])
+
+		switch method {
+		case uint32(pb.RpcRequest_Login):
+			logger.InfoLogger.Println("Login request")
+			var args pb.LoginRequest
+			err := proto.Unmarshal(messageBuffer[4:], &args)
+			if err != nil {
+				logger.ErrorLogger.Println(err)
+				return
+			}
+			var userId uint64 = 2
+			response := &pb.LoginResponse{
+				UserId:   &userId,
+				Username: args.Username,
+				Password: args.Password,
+				Token:    args.Username,
+			}
+			message, err := rpc.SerializeMessage(pb.RpcRequest_Login, response)
+			if err != nil {
+				logger.ErrorLogger.Println("Failed to serialize message:", err)
+				return
+			}
+
+			responseBuffer.Write(message)
+		}
+		conn.Write(responseBuffer.Bytes())
+	}
+
 }

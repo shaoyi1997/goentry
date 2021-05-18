@@ -5,10 +5,15 @@ import (
 	"github.com/fasthttp/router"
 )
 
+var (
+	userController controllers.UserController
+)
+
 func initUserRouter(router *router.Router) {
-	router.POST("/user/login", controllers.LoginHandler)
-	router.POST("/user/logout", controllers.LogoutHandler)
-	router.POST("/user/register", controllers.RegisterHandler)
-	router.PATCH("/user/{user_id}/", controllers.UpdateUserHandler)
-	router.PATCH("/user/{user_id}/uploadProfileImage", controllers.UploadProfileImageHandler)
+	userController = controllers.NewUserController()
+	router.POST("/user/login", userController.LoginHandler)
+	router.POST("/user/logout", userController.LogoutHandler)
+	router.POST("/user/register", userController.RegisterHandler)
+	router.PATCH("/user/{user_id}/", userController.UpdateUserHandler)
+	router.PATCH("/user/{user_id}/uploadProfileImage", userController.UploadProfileImageHandler)
 }

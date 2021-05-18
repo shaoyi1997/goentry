@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 
+	"git.garena.com/shaoyihong/go-entry-task/httpserver/config"
+
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"git.garena.com/shaoyihong/go-entry-task/httpserver/routers"
 
@@ -15,6 +17,7 @@ var (
 
 func main() {
 	logger.InitLogger()
+	config.InitConfig()
 	router := routers.InitRouter()
 	handler := router.Handler
 	if *compress {
@@ -22,19 +25,4 @@ func main() {
 	}
 	logger.InfoLogger.Println("HTTP server is listening at port:", 80)
 	logger.ErrorLogger.Fatalln(fasthttp.ListenAndServe(":80", handler))
-}
-
-func requestHandler(ctx *fasthttp.RequestCtx) {
-
-	//
-	ctx.SetContentType("text/plain; charset=utf8")
-
-	// Set arbitrary headers
-	ctx.Response.Header.Set("X-My-Header", "my-header-value")
-
-	// Set cookies
-	//var c fasthttp.Cookie
-	//c.SetKey("cookie-name")
-	//c.SetValue("cookie-value")
-	//ctx.Response.Header.SetCookie(&c)
 }

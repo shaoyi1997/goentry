@@ -13,12 +13,19 @@ message RpcRequest {
     Register = 5;
   }
   required Method method = 1;
-  required string token = 2;
+  optional string token = 2;
 }
 
 message LoginRequest {
   required string username = 1;
   required string password = 2;
+}
+
+message LoginResponse {
+  required uint64 user_id = 1;
+  required string username = 2;
+  required string password = 3;
+  required string token = 4;
 }
 
 message LogoutRequest {
