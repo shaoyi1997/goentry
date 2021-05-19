@@ -5,12 +5,17 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+const (
+	addr = "localhost:"
+	port = "8080"
+)
+
 func main() {
 	logger.InitLogger()
 	requestHandler := generateRequestHandler()
 
-	logger.InfoLogger.Println("Starting HTTP server on", "localhost:8080")
-	if err := fasthttp.ListenAndServe("localhost:8080", requestHandler); err != nil {
+	logger.InfoLogger.Println("HTTP file server is listening on port:", port)
+	if err := fasthttp.ListenAndServe(addr+port, requestHandler); err != nil {
 		logger.ErrorLogger.Fatalln("Failed in ListenAndServe:", err)
 	}
 }

@@ -45,7 +45,7 @@ func initTCPListener() net.Listener {
 		logger.ErrorLogger.Fatal(err)
 	}
 
-	logger.InfoLogger.Print("Server is listening on port " + serverConfig.Port)
+	logger.InfoLogger.Println("TCP server is listening on port:", serverConfig.Port)
 
 	return listener
 }

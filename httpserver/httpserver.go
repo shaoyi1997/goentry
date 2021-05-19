@@ -36,7 +36,7 @@ func main() {
 		handler = fasthttp.CompressHandler(handler)
 	}
 	go monitorForGracefulShutdown()
-	logger.InfoLogger.Println("HTTP server is listening at port:", 80)
+	logger.InfoLogger.Println("HTTP server is listening on port:", 80)
 	logger.ErrorLogger.Fatalln(fasthttp.ListenAndServe(":80", handler))
 }
 
