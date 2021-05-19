@@ -50,8 +50,10 @@ message LogoutResponse {
 }
 
 message UpdateRequest {
-  required uint64 user_id = 1;
-  required string nickname = 2;
+  required string username = 1;
+  required string token = 2;
+  optional string nickname = 3;
+  optional string image_data = 4;
 }
 
 message RegisterRequest {

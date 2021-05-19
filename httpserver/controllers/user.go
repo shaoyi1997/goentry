@@ -15,6 +15,10 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+const (
+	tokenKey = "sessionId"
+)
+
 type UserController struct {
 	client          rpc.IRPCClient
 	profileTemplate *template.Template
@@ -46,21 +50,43 @@ func (controller *UserController) LoginHandler(ctx *fasthttp.RequestCtx) {
 		ctx.Error(err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	token := response.Token
-	if token != nil {
-		exp := time.Now().AddDate(0, 0, 1)
-		cookie := fasthttp.Cookie{}
-		cookie.SetKey(username)
-		cookie.SetValue(*token)
-		cookie.SetExpire(exp)
-		ctx.Response.Header.SetCookie(&cookie)
+	if token == nil {
+		ctx.Error(err.Error(), http.StatusInternalServerError)
+		return
 	}
+	setSessionIdCookie(ctx, *token)
 	executeTemplate(ctx, controller.profileTemplate, response.User)
 }
 
+func setSessionIdCookie(ctx *fasthttp.RequestCtx, token string) {
+	exp := time.Now().AddDate(0, 0, 1)
+	cookie := fasthttp.Cookie{}
+	cookie.SetKey(tokenKey)
+	cookie.SetValue(token)
+	cookie.SetExpire(exp)
+	cookie.SetHTTPOnly(true)
+	cookie.SetSecure(true)
+	ctx.Response.Header.SetCookie(&cookie)
+}
+
 func (controller *UserController) LogoutHandler(ctx *fasthttp.RequestCtx) {
-	fmt.Fprintf(ctx, "LogoutHandler")
+	username := string(ctx.FormValue("username"))
+	token := extractToken(ctx)
+
+	logoutRequest := &pb.LogoutRequest{
+		Username: &username,
+		Token:    &token,
+	}
+
+	response := new(pb.LogoutResponse)
+
+	err := controller.client.CallMethod(pb.RpcRequest_Logout, logoutRequest, response)
+	if err != nil {
+		ctx.Error(err.Error(), http.StatusInternalServerError)
+		return
+	}
+	executeTemplate(ctx, controller.loginTemplate, nil)
 }
 
 func (controller *UserController) RegisterHandler(ctx *fasthttp.RequestCtx) {
@@ -80,7 +106,7 @@ func extractUserId(ctx *fasthttp.RequestCtx) string {
 }
 
 func extractToken(ctx *fasthttp.RequestCtx) string {
-	return string(ctx.Request.Header.Cookie("token"))
+	return string(ctx.Request.Header.Cookie(tokenKey))
 }
 
 func (controller *UserController) GetLoginHandler(ctx *fasthttp.RequestCtx) {
