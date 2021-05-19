@@ -20,14 +20,17 @@ type UserService struct {
 }
 
 func NewUserService(database common.Database, redis *redis.Client) *UserService {
-	return &UserService{
+	service := &UserService{
 		repo:           NewUserRepository(database, redis),
 		hasher:         NewPasswordHasher(),
 		validator:      newUserValidator(),
 		sessionManager: newSessionManager(redis),
 		imageStorage:   storage.NewImageStorage(),
 	}
+
+	return service
 }
+
 func (service *UserService) GetByUsername(username string) (*pb.User, error) {
 	return service.repo.GetByUsername(username)
 }
@@ -56,11 +59,16 @@ func (service *UserService) processRegister(messageByte []byte) (*pb.User, strin
 		return nil, "", &errorCode
 	}
 
+	return service.executeRegister(&args)
+}
+
+func (service *UserService) executeRegister(args *pb.RegisterRequest) (*pb.User, string, *pb.LoginRegisterResponse_ErrorCode) {
 	username := args.GetUsername()
 	password := args.GetPassword()
 	nickname := args.GetNickname()
 
-	err = service.validator.ValidateRegister(username, password)
+	var errorCode pb.LoginRegisterResponse_ErrorCode
+	err := service.validator.ValidateRegister(username, password)
 	if err != nil {
 		if err == emptyUsernameError {
 			errorCode = pb.LoginRegisterResponse_MissingCredentials
