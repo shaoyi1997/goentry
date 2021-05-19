@@ -12,6 +12,7 @@ var (
 
 func initUserRouter(router *router.Router, rpcClient rpc.IRPCClient) {
 	userController = controllers.NewUserController(rpcClient)
+	router.GET("/login", userController.GetLoginHandler)
 	router.POST("/user/login", userController.LoginHandler)
 	router.POST("/user/logout", userController.LogoutHandler)
 	router.POST("/user/register", userController.RegisterHandler)

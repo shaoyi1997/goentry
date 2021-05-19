@@ -26,10 +26,16 @@ type RedisConfig struct {
 	PoolSize int    `yaml:"pool_size"`
 }
 
+type FileServerConfig struct {
+	Address    string `yaml:"address"`
+	StorageDir string `yaml:"storage_dir"`
+}
+
 type Config struct {
-	Server   ServerConfig   `yaml:"server"`
-	Database DatabaseConfig `yaml:"database"`
-	Redis    RedisConfig    `yaml:"redis"`
+	Server     ServerConfig     `yaml:"server"`
+	Database   DatabaseConfig   `yaml:"database"`
+	Redis      RedisConfig      `yaml:"redis"`
+	FileServer FileServerConfig `yaml:"file_server"`
 }
 
 var config Config
@@ -63,4 +69,8 @@ func GetDatabaseConfig() DatabaseConfig {
 
 func GetRedisConfig() RedisConfig {
 	return config.Redis
+}
+
+func GetFileServerConfig() FileServerConfig {
+	return config.FileServer
 }

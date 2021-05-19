@@ -50,7 +50,7 @@ func (rpcClient *RPCClient) CallMethod(method pb.RpcRequest_Method, requestMessa
 		return err
 	}
 
-	connection, err := rpcClient.connectionPool.BlockingGet()
+	connection, err := rpcClient.connectionPool.Get()
 	if err != nil {
 		return err
 	}

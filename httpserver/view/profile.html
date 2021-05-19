@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+</head>
+<body>
+    <div>Username:{{.Username}}</div>
+    <div>
+        <form action="/edit/{{.Username}}" method="POST">
+        <label>Nickname:</label>
+        <input type="text" name="nickname" value="{{.Nickname}}" />
+        <input type="submit" value="Edit" />
+        </form>
+    </div>
+    <div>
+        <img src="{{.ProfileImage}}" height="130" width="130">
+    </div>
+    <div>
+        <form enctype="multipart/form-data" action="/upload/{{.Username}}" method="POST">
+            <input type="file" name="profile_img" />
+            <input type="submit" value="Upload" />
+        </form>
+    </div>
+</body>
+</html>

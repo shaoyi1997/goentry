@@ -3,6 +3,7 @@ package user
 import (
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"git.garena.com/shaoyihong/go-entry-task/common/rpc"
+	"git.garena.com/shaoyihong/go-entry-task/tcpserver/services/resources/user/storage"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/proto"
 
@@ -15,14 +16,16 @@ type UserService struct {
 	hasher         IPasswordHasher
 	validator      IUserValidator
 	sessionManager ISessionManager
+	imageStorage   storage.IImageStorage
 }
 
 func NewUserService(database common.Database, redis *redis.Client) *UserService {
 	return &UserService{
 		repo:           NewUserRepository(database, redis),
-		hasher:         newPasswordHasher(),
+		hasher:         NewPasswordHasher(),
 		validator:      newUserValidator(),
 		sessionManager: newSessionManager(redis),
+		imageStorage:   storage.NewImageStorage(),
 	}
 }
 func (service *UserService) GetByUsername(username string) (*pb.User, error) {
@@ -67,7 +70,7 @@ func (service *UserService) processRegister(messageByte []byte) (*pb.User, strin
 		return nil, "", &errorCode
 	}
 
-	hashedPassword, err := service.hasher.hash(password)
+	hashedPassword, err := service.hasher.Hash(password)
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to hash password:", err)
 		errorCode = pb.LoginRegisterResponse_InternalServerError
@@ -161,7 +164,7 @@ func (service *UserService) processLogin(messageByte []byte) (*pb.User, string, 
 		return nil, "", &errorCode
 	}
 
-	isValidPassword := service.hasher.comparePasswords(*user.Password, password)
+	isValidPassword := service.hasher.ComparePasswords(*user.Password, password)
 	if !isValidPassword {
 		errorCode = pb.LoginRegisterResponse_InvalidPassword
 		return nil, "", &errorCode
