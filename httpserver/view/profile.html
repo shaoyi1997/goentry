@@ -6,20 +6,16 @@
 </head>
 <body>
     <div>Username:{{.Username}}</div>
-    <div>
-        <form action="/edit/{{.Username}}" method="POST">
-        <label>Nickname:</label>
-        <input type="text" name="nickname" value="{{.Nickname}}" />
-        <input type="submit" value="Edit" />
-        </form>
-    </div>
+    <div>Username:{{.ProfileImage}}</div>
     <div>
         <img src="{{.ProfileImage}}" height="130" width="130">
     </div>
     <div>
-        <form enctype="multipart/form-data" action="/upload/{{.Username}}" method="POST">
-            <input type="file" name="profile_img" />
-            <input type="submit" value="Upload" />
+        <form enctype="multipart/form-data" action="/user/{{.Username}}/" method="POST">
+            <label>Nickname:</label>
+            <input type="text" name="nickname" value="{{.Nickname}}" />
+            <input type="file" name="profile_image" />
+            <input type="submit" value="Update" />
         </form>
     </div>
 </body>

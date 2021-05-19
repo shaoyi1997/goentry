@@ -7,7 +7,7 @@ import (
 )
 
 type IUserRepository interface {
-	GetByUsername(username string) (*pb.User, error)
+	GetByUsername(username string, fromCache bool) (*pb.User, error)
 	UpdateNickname(username, nickname string) error
 	UpdateProfileImage(username, imageUrl string) error
 	Insert(username, password, nickname, imageUrl string) (*pb.User, error)
@@ -24,10 +24,12 @@ func NewUserRepository(database common.Database, redis *redis.Client) IUserRepos
 		cache: newUserCache(redis),
 	}
 }
-func (repo *UserRepository) GetByUsername(username string) (*pb.User, error) {
-	user := repo.cache.getCacheUser(username)
-	if user != nil {
-		return user, nil
+func (repo *UserRepository) GetByUsername(username string, fromCache bool) (*pb.User, error) {
+	if fromCache {
+		user := repo.cache.getCacheUser(username)
+		if user != nil {
+			return user, nil
+		}
 	}
 	user, err := repo.dao.getByUsername(username)
 	if err != nil {

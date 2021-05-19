@@ -103,7 +103,13 @@ func handleConn(conn net.Conn) {
 			if err != nil {
 				logger.ErrorLogger.Println("Failed to login:", err)
 			}
+		case uint32(pb.RpcRequest_Update):
+			responseMessage, err = service.User.Update(messageBuffer[4:])
+			if err != nil {
+				logger.ErrorLogger.Println("Failed to update user:", err)
+			}
 		}
+
 		_, err = conn.Write(responseMessage)
 		if err != nil {
 			logger.ErrorLogger.Println("Failed to write response:", err)

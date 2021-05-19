@@ -16,4 +16,4 @@ redis:
 
 file_server:
   address: http://localhost:8080
-  storage_dirL: ./images
+  storage_dir: ./images

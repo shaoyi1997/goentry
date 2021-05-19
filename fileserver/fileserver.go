@@ -17,7 +17,7 @@ func main() {
 
 func generateRequestHandler() func(ctx *fasthttp.RequestCtx) {
 	fs := &fasthttp.FS{
-		Root:               "./images",
+		Root:               "./",
 		GenerateIndexPages: true,
 		Compress:           false,
 	}

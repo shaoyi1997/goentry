@@ -75,9 +75,15 @@ func ReadMessageBufferFromConnection(conn net.Conn) ([]byte, error) {
 	length := binary.BigEndian.Uint32(lenByte[:])
 
 	buffer := make([]byte, length)
-	if _, err := conn.Read(buffer[:]); err != nil {
-		return nil, err
-	}
+	var totalLengthRead uint32
 
-	return buffer, nil
+	for {
+		read, err := conn.Read(buffer[totalLengthRead:])
+		totalLengthRead += uint32(read)
+		if totalLengthRead >= length {
+			return buffer, nil
+		} else if err != nil {
+			return nil, err
+		}
+	}
 }

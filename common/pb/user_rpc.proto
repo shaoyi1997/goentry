@@ -23,6 +23,7 @@ message LoginRequest {
 
 message LoginRegisterResponse {
   enum ErrorCode {
+    Ok = 0;
     InvalidUsername = 1;
     InvalidPassword = 2;
     MissingCredentials = 3;
@@ -41,6 +42,7 @@ message LogoutRequest {
 
 message LogoutResponse {
   enum ErrorCode {
+    Ok = 0;
     MissingUsername = 1;
     InternalServerError = 2;
   }
@@ -54,6 +56,20 @@ message UpdateRequest {
   required string token = 2;
   optional string nickname = 3;
   optional string image_data = 4;
+  optional string image_file_type = 5;
+}
+
+message UpdateResponse {
+  enum ErrorCode {
+    Ok = 0;
+    InvalidUsername = 1;
+    InvalidToken = 2;
+    InvalidImageFile = 3;
+    InternalServerError = 4;
+  }
+
+  optional User user = 1;
+  optional ErrorCode error = 3;
 }
 
 message RegisterRequest {
