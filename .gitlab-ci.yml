@@ -1,7 +1,9 @@
+image: "harbor.shopeemobile.com/shopee/lls-ci-base:1.13"
+
 stages:
   - lint
 
 lint:
   stage: lint
-  image: harbor.shopeemobile.com/shopee/golangci-lint
-  script: run_lint.sh
+  script:
+    - /usr/bin/golangci-lint/golangci-lint run -v --timeout=5m --skip-files "_test\.go" ./...
