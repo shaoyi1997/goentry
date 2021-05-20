@@ -9,48 +9,53 @@ import (
 type IUserRepository interface {
 	GetByUsername(username string, fromCache bool) (*pb.User, error)
 	UpdateNickname(username, nickname string) error
-	UpdateProfileImage(username, imageUrl string) error
-	Insert(username, password, nickname, imageUrl string) (*pb.User, error)
+	UpdateProfileImage(username, imageURL string) error
+	Insert(username, password, nickname, imageURL string) (*pb.User, error)
 }
 
-type UserRepository struct {
+type Repository struct {
 	dao   IUserDAO
 	cache IUserCache
 }
 
 func NewUserRepository(database common.Database, redis *redis.Client) IUserRepository {
-	return &UserRepository{
+	return &Repository{
 		dao:   newUserDAO(database),
 		cache: newUserCache(redis),
 	}
 }
-func (repo *UserRepository) GetByUsername(username string, fromCache bool) (*pb.User, error) {
+
+func (repo *Repository) GetByUsername(username string, fromCache bool) (*pb.User, error) {
 	if fromCache {
 		user := repo.cache.getCacheUser(username)
 		if user != nil {
 			return user, nil
 		}
 	}
+
 	user, err := repo.dao.getByUsername(username)
 	if err != nil {
 		return nil, err
 	}
+
 	repo.cache.setCacheUser(user)
+
 	return user, nil
 }
 
-func (repo *UserRepository) UpdateNickname(username, nickname string) error {
+func (repo *Repository) UpdateNickname(username, nickname string) error {
 	return repo.dao.updateNickname(username, nickname)
 }
 
-func (repo *UserRepository) UpdateProfileImage(username, imageUrl string) error {
-	return repo.dao.updateProfileImage(username, imageUrl)
+func (repo *Repository) UpdateProfileImage(username, imageURL string) error {
+	return repo.dao.updateProfileImage(username, imageURL)
 }
 
-func (repo *UserRepository) Insert(username, password, nickname, imageUrl string) (*pb.User, error) {
-	user, err := repo.dao.insert(username, password, nickname, imageUrl)
+func (repo *Repository) Insert(username, password, nickname, imageURL string) (*pb.User, error) {
+	user, err := repo.dao.insert(username, password, nickname, imageURL)
 	if err == nil && user != nil {
 		repo.cache.setCacheUser(user)
 	}
+
 	return user, err
 }

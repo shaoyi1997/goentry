@@ -6,9 +6,7 @@ import (
 	"github.com/fasthttp/router"
 )
 
-var (
-	userController controllers.UserController
-)
+var userController controllers.UserController
 
 func initUserRouter(router *router.Router, rpcClient rpc.IRPCClient) {
 	userController = controllers.NewUserController(rpcClient)

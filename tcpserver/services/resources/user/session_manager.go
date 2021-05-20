@@ -7,7 +7,12 @@ import (
 	"io"
 	"time"
 
+	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"github.com/go-redis/redis/v8"
+)
+
+const (
+	tokenExpiryTime = 5
 )
 
 type ISessionManager interface {
@@ -24,11 +29,12 @@ func newSessionManager(redis *redis.Client) ISessionManager {
 	return &SessionManager{redis: redis}
 }
 
-func createSessionId() string {
+func createSessionID() string {
 	b := make([]byte, 32)
 	if _, err := io.ReadFull(rand.Reader, b); err != nil {
 		return ""
 	}
+
 	return base64.URLEncoding.EncodeToString(b)
 }
 
@@ -37,10 +43,15 @@ func createKeyFromUsername(username string) string {
 }
 
 func (manager *SessionManager) SetCacheToken(username string) (string, error) {
-	token := createSessionId()
-	if err := manager.redis.Set(context.Background(), createKeyFromUsername(username), token, time.Minute*5).Err(); err != nil {
+	token := createSessionID()
+	key := createKeyFromUsername(username)
+
+	if err := manager.redis.Set(context.Background(), key, token, time.Minute*tokenExpiryTime).Err(); err != nil {
+		logger.ErrorLogger.Println("Failed to set cache token:", err)
+
 		return "", err
 	}
+
 	return token, nil
 }
 
@@ -49,6 +60,7 @@ func (manager *SessionManager) GetCacheToken(username string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return token, nil
 }
 

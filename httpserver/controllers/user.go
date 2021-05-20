@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -9,16 +10,14 @@ import (
 	"time"
 
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
-
-	"git.garena.com/shaoyihong/go-entry-task/httpserver/rpc"
-
 	"git.garena.com/shaoyihong/go-entry-task/common/pb"
-
+	"git.garena.com/shaoyihong/go-entry-task/httpserver/rpc"
 	"github.com/valyala/fasthttp"
 )
 
 const (
-	tokenKey = "sessionId"
+	tokenKey     = "sessionId"
+	maxImageSize = 5000000
 )
 
 type UserController struct {
@@ -49,25 +48,29 @@ func (controller *UserController) LoginHandler(ctx *fasthttp.RequestCtx) {
 	err := controller.client.CallMethod(pb.RpcRequest_Login, loginRequest, response)
 	if err != nil {
 		ctx.Error(err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
 	responseError := response.GetError()
 	if responseError != pb.LoginRegisterResponse_Ok {
 		executeTemplate(ctx, controller.loginTemplate, nil)
+
 		return
 	}
 
-	token := response.Token
-	if token == nil {
+	token := response.GetToken()
+	if token == "" {
 		ctx.Error(err.Error(), http.StatusInternalServerError)
+
 		return
 	}
-	setSessionIdCookie(ctx, *token)
+
+	setSessionIDCookie(ctx, token)
 	executeTemplate(ctx, controller.profileTemplate, response.User)
 }
 
-func setSessionIdCookie(ctx *fasthttp.RequestCtx, token string) {
+func setSessionIDCookie(ctx *fasthttp.RequestCtx, token string) {
 	exp := time.Now().AddDate(0, 0, 1)
 	cookie := fasthttp.Cookie{}
 	cookie.SetKey(tokenKey)
@@ -92,8 +95,10 @@ func (controller *UserController) LogoutHandler(ctx *fasthttp.RequestCtx) {
 	err := controller.client.CallMethod(pb.RpcRequest_Logout, logoutRequest, response)
 	if err != nil {
 		ctx.Error(err.Error(), http.StatusInternalServerError)
+
 		return
 	}
+
 	executeTemplate(ctx, controller.loginTemplate, nil)
 }
 
@@ -109,41 +114,38 @@ func (controller *UserController) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 	}
 
 	response := new(pb.UpdateResponse)
-	err := controller.client.CallMethod(pb.RpcRequest_Update, updateRequest, response)
-	if err != nil {
+	if err := controller.client.CallMethod(pb.RpcRequest_Update, updateRequest, response); err != nil {
 		ctx.Error(err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
 	responseErr := response.GetError()
-	if responseErr != pb.UpdateResponse_Ok {
-		switch responseErr {
-		case pb.UpdateResponse_InvalidToken:
-			executeTemplate(ctx, controller.loginTemplate, nil)
-			return
-		default:
-			// TODO: error in profile
-			executeTemplate(ctx, controller.loginTemplate, nil)
-		}
-		return
+	if responseErr == pb.UpdateResponse_InvalidToken {
+		executeTemplate(ctx, controller.loginTemplate, nil)
+	} else if responseErr != pb.UpdateResponse_Ok {
+		executeTemplate(ctx, controller.loginTemplate, nil) // TODO: error in profile
 	}
-	executeTemplate(ctx, controller.profileTemplate, response.User)
 
+	executeTemplate(ctx, controller.profileTemplate, response.User)
 }
 
 func (controller *UserController) extractUpdateRequest(ctx *fasthttp.RequestCtx) *pb.UpdateRequest {
 	form, err := ctx.MultipartForm()
 	if err != nil {
 		statusCode := http.StatusInternalServerError
-		if err == fasthttp.ErrNoMultipartForm {
+		if errors.Is(err, fasthttp.ErrNoMultipartForm) {
 			statusCode = http.StatusBadRequest
 		}
+
 		ctx.Error(err.Error(), statusCode)
+
 		return nil
 	}
 
 	nicknames := form.Value["nickname"]
 	var nickname string
+
 	if len(nicknames) > 0 {
 		nickname = nicknames[0]
 	}
@@ -166,36 +168,47 @@ func (controller *UserController) extractUpdateRequest(ctx *fasthttp.RequestCtx)
 func (controller *UserController) extractImageDataAndExtension(ctx *fasthttp.RequestCtx) (string, string) {
 	imageFileHeader, err := ctx.FormFile("profile_image")
 	if err != nil {
-		if err == fasthttp.ErrMissingFile {
+		if errors.Is(err, fasthttp.ErrMissingFile) {
 			return "", ""
 		}
+
 		logger.ErrorLogger.Println("Unexpected error:", err)
+
 		ctx.Error("unexpected error", http.StatusInternalServerError)
+
 		return "", ""
 	}
 
 	fileExtension := filepath.Ext(imageFileHeader.Filename)
 
 	imageSize := imageFileHeader.Size
-	if imageSize > 5000000 {
+	if imageSize > maxImageSize {
 		ctx.Error("image file is too huge", http.StatusBadRequest)
+
 		return "", ""
 	}
 
 	imgData := make([]byte, imageSize)
+
 	file, err := imageFileHeader.Open()
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to open image file:", err)
+
 		ctx.Error("failed to open image file", http.StatusInternalServerError)
+
 		return "", ""
 	}
 	defer file.Close()
+
 	n, err := file.Read(imgData)
 	if err != nil || n <= 0 {
 		ctx.Error("failed to read image file", http.StatusBadRequest)
+
 		return "", ""
 	}
+
 	encodedImageData := base64.StdEncoding.EncodeToString(imgData)
+
 	return encodedImageData, fileExtension
 }
 

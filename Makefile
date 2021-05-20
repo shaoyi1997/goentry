@@ -14,3 +14,6 @@ fileserver:
 httpserver:
 	sleep 3 # to allow time for tcpserver to start up
 	go run httpserver/httpserver.go
+
+lint:
+	golangci-lint run

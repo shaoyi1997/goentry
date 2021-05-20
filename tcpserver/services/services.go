@@ -6,13 +6,14 @@ import (
 )
 
 type Services struct {
-	User *user.UserService
+	User *user.Service
 }
 
 func Init() *Services {
 	db := common.InitDB()
 	redis := common.InitRedis()
 	userService := user.NewUserService(*db, redis)
+
 	return &Services{User: userService}
 }
 

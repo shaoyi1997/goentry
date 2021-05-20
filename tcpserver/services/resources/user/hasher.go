@@ -14,18 +14,19 @@ func NewPasswordHasher() IPasswordHasher {
 	return &bcryptPasswordHasher{}
 }
 
-type bcryptPasswordHasher struct {
-}
+type bcryptPasswordHasher struct{}
 
-func (_ *bcryptPasswordHasher) Hash(password string) (string, error) {
+func (*bcryptPasswordHasher) Hash(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 	if err != nil {
 		logger.WarningLogger.Println("Failed to generate hash from password", err)
 	}
+
 	return string(hash), err
 }
 
-func (_ *bcryptPasswordHasher) ComparePasswords(hashedPassword string, plainPassword string) bool {
+func (*bcryptPasswordHasher) ComparePasswords(hashedPassword string, plainPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
+
 	return err == nil
 }

@@ -12,16 +12,18 @@ const (
 
 func main() {
 	logger.InitLogger()
+
 	requestHandler := generateRequestHandler()
 
 	logger.InfoLogger.Println("HTTP file server is listening on port:", port)
+
 	if err := fasthttp.ListenAndServe(addr+port, requestHandler); err != nil {
 		logger.ErrorLogger.Fatalln("Failed in ListenAndServe:", err)
 	}
 }
 
 func generateRequestHandler() func(ctx *fasthttp.RequestCtx) {
-	fs := &fasthttp.FS{
+	fs := &fasthttp.FS{ //nolint:exhaustivestruct
 		Root:               "./",
 		GenerateIndexPages: true,
 		Compress:           false,

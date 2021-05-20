@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -27,7 +28,9 @@ var (
 func main() {
 	logger.InitLogger()
 	config.InitConfig()
+
 	service = services.Init()
+
 	initTCPServer()
 }
 
@@ -85,12 +88,14 @@ func monitorForGracefulShutdown(listener io.Closer) {
 func handleConn(conn net.Conn) {
 	defer conn.Close()
 	defer waitGroup.Done()
+
 	for {
 		messageBuffer, err := rpc.ReadMessageBufferFromConnection(conn)
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				return
 			}
+
 			continue
 		}
 
@@ -113,6 +118,7 @@ func handleConn(conn net.Conn) {
 		_, err = conn.Write(responseMessage)
 		if err != nil {
 			logger.ErrorLogger.Println("Failed to write response:", err)
+
 			return
 		}
 	}

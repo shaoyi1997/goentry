@@ -16,5 +16,6 @@ type PoolConn struct {
 func (poolConn *PoolConn) Close() error {
 	poolConn.mu.RLock()
 	defer poolConn.mu.RUnlock()
+
 	return poolConn.pool.Return(poolConn.Conn)
 }

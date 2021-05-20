@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
-
 	"git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
 	"github.com/go-redis/redis/v8"
 )
@@ -14,7 +13,7 @@ var redisClient *redis.Client
 
 func InitRedis() *redis.Client {
 	redisConfig := config.GetRedisConfig()
-	redisClient = redis.NewClient(&redis.Options{
+	redisClient = redis.NewClient(&redis.Options{ //nolint:exhaustivestruct
 		Addr:     fmt.Sprintf("%s:%s", redisConfig.Host, redisConfig.Port),
 		Password: redisConfig.Password,
 		DB:       0,
@@ -26,13 +25,14 @@ func InitRedis() *redis.Client {
 	}
 
 	logger.InfoLogger.Println("Redis connection initialised successfully")
+
 	return redisClient
 }
 
 func TearDownRedis() {
 	logger.InfoLogger.Println("Closing redis connection")
-	err := redisClient.Close()
-	if err != nil {
+
+	if err := redisClient.Close(); err != nil {
 		logger.ErrorLogger.Println("Failed to close redis:", err)
 	}
 }

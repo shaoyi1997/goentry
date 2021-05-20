@@ -11,7 +11,6 @@ import (
 )
 
 func SerializeMessage(method pb.RpcRequest_Method, args interface{}) ([]byte, error) {
-
 	message, err := prepareRequestMessage(method, args)
 	if err != nil {
 		return nil, err
@@ -31,20 +30,24 @@ func prepareRequestMessage(method pb.RpcRequest_Method, args interface{}) (*byte
 	encodedArgs, err := proto.Marshal(args.(proto.Message))
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to encode request args:", err)
+
 		return nil, err
 	}
 
 	err = binary.Write(buffer, binary.BigEndian, method)
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to write request method: ", err)
+
 		return nil, err
 	}
 
 	err = binary.Write(buffer, nil, encodedArgs)
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to write request args:", err)
+
 		return nil, err
 	}
+
 	return buffer, nil
 }
 
@@ -55,14 +58,17 @@ func prependLenToMessage(message *bytes.Buffer) (*bytes.Buffer, error) {
 	err := binary.Write(fullMessage, binary.BigEndian, length)
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to write length: ", err)
+
 		return nil, err
 	}
 
 	err = binary.Write(fullMessage, nil, message.Bytes())
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to write message: ", err)
+
 		return nil, err
 	}
+
 	return fullMessage, err
 }
 
@@ -80,6 +86,7 @@ func ReadMessageBufferFromConnection(conn net.Conn) ([]byte, error) {
 	for {
 		read, err := conn.Read(buffer[totalLengthRead:])
 		totalLengthRead += uint32(read)
+
 		if totalLengthRead >= length {
 			return buffer, nil
 		} else if err != nil {

@@ -34,10 +34,12 @@ type IPool interface {
 }
 
 var (
-	// ErrClosed is error which pool has been closed but still been used
+	// ErrClosed is error which pool has been closed but still been used.
 	ErrClosed = errors.New("pool has been closed")
-	// ErrNil is error which pool is nil but has been used
+	// ErrNil is error which pool is nil but has been used.
 	ErrNil = errors.New("pool is nil")
+	// ErrInvalidPoolConfig is error when pool settings are invalid.
+	ErrInvalidPoolConfig = errors.New("connection pool capacity settings are invalid")
 )
 
 type Pool struct {
@@ -45,13 +47,16 @@ type Pool struct {
 	factory                     Factory
 	mu                          sync.RWMutex
 	poolConfig                  *PoolConfig
-	createNum                   int
 	availableSlotsForConnection chan bool
 }
 
 func (pool *Pool) WrapConn(conn net.Conn) net.Conn {
-	pc := &PoolConn{pool: pool}
-	pc.Conn = conn
+	pc := &PoolConn{
+		Conn: conn,
+		pool: pool,
+		mu:   sync.RWMutex{},
+	}
+
 	return pc
 }
 
@@ -60,6 +65,7 @@ func (pool *Pool) GetConnsAndFactory() (chan net.Conn, Factory) {
 	connections := pool.connections
 	factory := pool.factory
 	pool.mu.RUnlock()
+
 	return connections, factory
 }
 
@@ -73,7 +79,7 @@ func (pool *Pool) RemoveSlotsForConnection() {
 
 func NewPool(pc *PoolConfig) (IPool, error) {
 	if pc.InitCap < 0 || pc.MaxCap < 0 || pc.InitCap > pc.MaxCap {
-		return nil, errors.New("connection pool capacity settings are invalid")
+		return nil, ErrInvalidPoolConfig
 	}
 
 	pool := &Pool{
@@ -81,15 +87,15 @@ func NewPool(pc *PoolConfig) (IPool, error) {
 		factory:                     pc.Factory,
 		poolConfig:                  pc,
 		availableSlotsForConnection: make(chan bool, pc.MaxCap),
+		mu:                          sync.RWMutex{},
 	}
 
-	//fill the availableSlotsForConnection channel so we can use it for blocking calls
+	// fill the availableSlotsForConnection channel so we can use it for blocking calls
 	for i := 0; i < pc.MaxCap; i++ {
 		pool.AddSlotsForConnection()
 	}
 
 	err := generateInitialPool(pool, pc)
-
 	if err != nil {
 		return nil, err
 	}
@@ -99,22 +105,26 @@ func NewPool(pc *PoolConfig) (IPool, error) {
 
 func generateInitialPool(pool *Pool, pc *PoolConfig) error {
 	for i := 0; i < pc.InitCap; i++ {
-		conn, err := pc.Factory()
 		pool.RemoveSlotsForConnection()
+
+		conn, err := pc.Factory()
 		if err != nil {
 			pool.Close()
-			return errors.New("Failed to fill the pool:" + err.Error())
+			logger.ErrorLogger.Fatalln("Failed to fill the pool:", err)
+
+			return err
 		}
 		pool.connections <- conn
 	}
+
 	return nil
 }
 
 // Return return the connection back to the pool. If the pool is full or closed,
 // conn is simply closed. A nil conn will be rejected.
-func (pool *Pool) Return(conn net.Conn) error {
+func (pool *Pool) Return(conn net.Conn) error { //nolint:interfacer
 	if conn == nil {
-		return errors.New("connection is nil. rejecting")
+		return nil
 	}
 
 	pool.mu.Lock()
@@ -137,7 +147,7 @@ func (pool *Pool) Return(conn net.Conn) error {
 }
 
 // Close implement Pool close interface
-// it will close all the connection in the pool
+// it will close all the connection in the pool.
 func (pool *Pool) Close() {
 	pool.mu.Lock()
 	connections := pool.connections
@@ -150,14 +160,17 @@ func (pool *Pool) Close() {
 	}
 
 	close(connections)
+
 	for conn := range connections {
 		conn.Close()
 	}
+
 	logger.InfoLogger.Println("Connection pool successfully closed")
 }
 
 func (pool *Pool) Len() int {
 	connections, _ := pool.GetConnsAndFactory()
+
 	return len(connections)
 }
 
@@ -177,19 +190,19 @@ func (pool *Pool) Get() (net.Conn, error) {
 		}
 
 		return pool.WrapConn(conn), nil
-	case _ = <-pool.availableSlotsForConnection:
+	case <-pool.availableSlotsForConnection:
 		pool.mu.Lock()
 		defer pool.mu.Unlock()
 
 		conn, err := factory()
 		if err != nil {
 			pool.AddSlotsForConnection()
+
 			return nil, err
 		}
 
 		return pool.WrapConn(conn), nil
-	// if context deadline is reached, return timeout error
-	case <-ctx.Done():
+	case <-ctx.Done(): // if context deadline is reached, return timeout error
 		return nil, ctx.Err()
 	}
 }

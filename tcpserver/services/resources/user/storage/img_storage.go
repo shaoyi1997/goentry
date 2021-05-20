@@ -5,9 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
-
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
+	"git.garena.com/shaoyihong/go-entry-task/tcpserver/config"
 )
 
 type IImageStorage interface {
@@ -21,6 +20,7 @@ type ImageStorage struct {
 
 func NewImageStorage() IImageStorage {
 	config := config.GetFileServerConfig()
+
 	return &ImageStorage{fileServerAddr: config.Address, storageDir: config.StorageDir}
 }
 
@@ -28,23 +28,28 @@ func (storage *ImageStorage) StoreImage(username, fileName string, data *string)
 	imgData, err := base64.StdEncoding.DecodeString(*data)
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to base64 decode image file: ", err)
+
 		return "", err
 	}
 
 	imgFolder := storage.storageDir + "/" + username
 	if _, err := os.Stat(imgFolder); os.IsNotExist(err) {
-		os.Mkdir(imgFolder, 0766)
+		err = os.Mkdir(imgFolder, 0766)
+		if err != nil {
+			logger.ErrorLogger.Panicln("Failed to create image folder:", err)
+		}
 	}
 
 	imgPath := imgFolder + "/" + fileName
 
-	err = ioutil.WriteFile(imgPath, imgData, 0644)
+	err = ioutil.WriteFile(imgPath, imgData, 0600)
 	if err != nil {
 		logger.ErrorLogger.Println("Failed to write image to file system: ", err)
+
 		return "", err
 	}
 
-	imgUrl := storage.fileServerAddr + "/" + imgPath
+	imgURL := storage.fileServerAddr + "/" + imgPath
 
-	return imgUrl, nil
+	return imgURL, nil
 }

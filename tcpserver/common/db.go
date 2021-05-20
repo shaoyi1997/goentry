@@ -14,7 +14,7 @@ import (
 var db *sql.DB
 
 type Database struct {
-	Db           *sql.DB
+	DB           *sql.DB
 	DatabaseName string
 }
 
@@ -26,8 +26,9 @@ func InitDB() *Database {
 	logger.InfoLogger.Println("Database connection initialised successfully")
 	configDB(databaseConfig)
 	createDB(databaseConfig)
+
 	return &Database{
-		Db:           db,
+		DB:           db,
 		DatabaseName: databaseConfig.Name,
 	}
 }
@@ -48,7 +49,8 @@ func configDB(databaseConfig config.DatabaseConfig) {
 }
 
 func createDB(databaseConfig config.DatabaseConfig) {
-	createDBQuery := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8 COLLATE utf8_bin", databaseConfig.Name)
+	createDBQuery := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8 COLLATE utf8_bin",
+		databaseConfig.Name)
 	if _, err := db.Exec(createDBQuery); err != nil {
 		logger.ErrorLogger.Panicln("Failed to create database")
 	}
@@ -56,6 +58,7 @@ func createDB(databaseConfig config.DatabaseConfig) {
 
 func TearDownDB() {
 	logger.InfoLogger.Println("Closing DB connection")
+
 	if err := db.Close(); err != nil {
 		logger.ErrorLogger.Println(err)
 	}
