@@ -16,7 +16,6 @@ type PoolConfig struct {
 	InitCap     int
 	MaxCap      int
 	WaitTimeout time.Duration
-	IdleTimeout time.Duration
 	Factory     Factory
 }
 

@@ -99,20 +99,11 @@ func handleConn(conn net.Conn) {
 			continue
 		}
 
-		var responseMessage []byte
-		method := binary.BigEndian.Uint32(messageBuffer[:4])
+		responseMessage, err := routeRequest(messageBuffer)
+		if err != nil {
+			logger.ErrorLogger.Println("Failed to handle request:", err)
 
-		switch method {
-		case uint32(pb.RpcRequest_Login):
-			responseMessage, err = service.User.Login(messageBuffer[4:])
-			if err != nil {
-				logger.ErrorLogger.Println("Failed to login:", err)
-			}
-		case uint32(pb.RpcRequest_Update):
-			responseMessage, err = service.User.Update(messageBuffer[4:])
-			if err != nil {
-				logger.ErrorLogger.Println("Failed to update user:", err)
-			}
+			return
 		}
 
 		_, err = conn.Write(responseMessage)
@@ -122,4 +113,29 @@ func handleConn(conn net.Conn) {
 			return
 		}
 	}
+}
+
+func routeRequest(messageBuffer []byte) ([]byte, error) {
+	var responseMessage []byte
+	var err error
+	method := binary.BigEndian.Uint32(messageBuffer[:4])
+
+	switch method {
+	case uint32(pb.RpcRequest_Login):
+		responseMessage, err = service.User.Login(messageBuffer[4:])
+		if err != nil {
+			logger.ErrorLogger.Println("Failed to login:", err)
+
+			return nil, err
+		}
+	case uint32(pb.RpcRequest_Update):
+		responseMessage, err = service.User.Update(messageBuffer[4:])
+		if err != nil {
+			logger.ErrorLogger.Println("Failed to update user:", err)
+
+			return nil, err
+		}
+	}
+
+	return responseMessage, err
 }

@@ -28,7 +28,6 @@ func NewRPCClient() (IRPCClient, error) {
 		InitCap:     poolConfig.InitialCapacity,
 		MaxCap:      poolConfig.MaxCapacity,
 		WaitTimeout: time.Duration(poolConfig.InitialCapacity) * time.Second,
-		IdleTimeout: time.Duration(poolConfig.IdleTimeout),
 		Factory:     func() (net.Conn, error) { return net.Dial("tcp", serverConfig.TCPAddress) },
 	})
 	if err != nil {
@@ -59,11 +58,7 @@ func (rpcClient *Client) CallMethod(method pb.RpcRequest_Method, requestMessage 
 		return err
 	}
 
-	if err = receiveResponse(connection, response); err != nil { 
-		return err
-	}
-
-	return nil
+	return receiveResponse(connection, response)
 }
 
 func receiveResponse(conn net.Conn, response interface{}) error {
