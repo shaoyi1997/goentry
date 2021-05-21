@@ -1,0 +1,68 @@
+@startuml
+->TCPServer: login request
+activate TCPServer
+
+TCPServer -> TCPServer: handleConn(connection)
+activate TCPServer
+
+TCPServer -> Serializer: ReadMessageBufferFromConnection(connection)
+activate Serializer
+return messageBuffer
+
+TCPServer -> TCPServer: routeRequest(messageBuffer)
+activate TCPServer
+
+TCPServer -> UserService: Login(messageBuffer)
+activate UserService
+
+UserService -> UserService: processLogin(messageBuffer)
+activate UserService
+
+UserService -> proto: Unmarshal(messageBuffer, args)
+activate proto
+return
+
+UserService -> Validator: ValidateNonEmptyUsernamePassword(username, password)
+activate Validator
+return
+
+UserService -> UserRepository: GetByUsername(username, fromCache)
+activate UserRepository
+
+
+UserRepository -> UserCache: getCacheUser(username)
+activate UserCache
+return user
+
+opt user == nil
+UserRepository -> UserDAO: getByUsername(username)
+activate UserDAO
+return user
+
+UserRepository -> UserCache: setCacheUser(user)
+activate UserCache
+deactivate UserCache
+end
+
+return user
+
+UserService -> Hasher: ComparePasswords(user.Password, password)
+activate Hasher
+return
+
+UserService -> SessionManager: SetCacheToken(user.Username)
+activate SessionManager
+return
+
+deactivate UserService
+
+UserService -> UserService: generateLoginRegisterResponse(pb.RpcRequest_Login, user, token, errorCode)
+activate UserService
+return responseMessage
+
+return responseMessage
+return responseMessage
+
+return
+return
+@enduml

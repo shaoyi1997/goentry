@@ -1,0 +1,57 @@
+@startuml
+->HTTPServer: login request
+activate HTTPServer
+
+HTTPServer -> UserController: ctx
+activate UserController
+
+create LoginRequest
+UserController -> LoginRequest
+activate LoginRequest
+return loginRequest
+
+UserController -> RPCClient: CallMethod(RpcRequest_Login, loginRequest, response)
+activate RPCClient
+
+RPCClient -> Serializer: SerializeMessage(method, requestMessage)
+activate Serializer
+return serializedRequest
+
+RPCClient -> ConnectionPool: Get()
+activate ConnectionPool
+return connection
+
+RPCClient -> RPCClient: sendMessage(connection, serializedRequest)
+activate RPCClient
+deactivate RPCClient
+
+RPCClient -> RPCClient: receiveMessage(connection, response)
+activate RPCClient
+
+RPCClient -> Serializer: ReadMessageBufferFromConnection(connection)
+activate Serializer
+return messageBuffer
+
+RPCClient -> proto: Unmarshal(messageBuffer, response)
+activate proto
+return
+
+deactivate RPCClient
+
+
+
+
+return
+
+
+UserController -> UserController: setSessionIDCookie(ctx, token)
+activate UserController
+deactivate UserController
+
+UserController -> UserController: executeTemplate(ctx, controller.profileTemplate, response.User)
+activate UserController
+deactivate UserController
+
+return
+return
+@enduml

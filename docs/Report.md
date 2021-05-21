@@ -1,4 +1,4 @@
-# Technical Document
+# Entry Task Report
 
 ## Systems Architecture
 
@@ -195,3 +195,41 @@ In order to simulate horizontal scaling, hash based sharding is used.
 The following diagram illustrates the sample flow for a login request.
 
 ![TCPServerLoginFlow](TCPServerLoginFlow.png)
+
+## Performance Test
+
+`wrk` was used to conduct performance testing. 
+
+```shell
+wrk -t12 -c1000 -d30s http://127.0.0.1:80/user/login -s scripts/wrk_login.lua --latency --timeout 10
+```
+
+The login query was performed on 12 threads and 1000 connections, where the credential of one among 200 unique users was randomly selected for the request.
+
+### Password Hashing
+
+In particular, performance testing was conducted to evaluate the efficiency of different hashing algorithms: `BCrypt` and salted `MD5`.
+
+The following image shows the result for `BCrypt`
+
+![Performance Test Result - Bcrypt](PerformanceTestBcrpyt.png)
+
+The following image shows the result for `MD5`
+
+![Performance Test Result - MD5](PerformanceTestMd5.png)
+
+Clearly, `MD5` achieved a much higher QPS of **22341** as compared to a QPS of **6391** for `BCrypt`
+
+
+**Security In Question**
+
+It is important to note however, that salted `MD5` is not cryptographically secure 
+    - Being a general purpose hashing function, it was never designed for password hashing
+    - It's shown to be cryptographically broken, vulnerable to both collision and preimage attacks.
+    - The fast hash construction of `MD5` comes at a cost of security as it is susceptible to brute force attack, which can be facilitated by hardware acceleration, especially without a rate limiter
+
+With `BCrypt`, it is specifically designed for password hashing and incorporates salt generation
+    - It is also an adaptive function, using a configurable iteration count to specify the number of rounds for hashing
+    - Thus, it is infeasible to hardware accelerate and this extra computational demand helps protect against dictionary and brute force attacks by slowing down the attack. 
+
+However, for purposes for this entry task which emphasises on maximising QPS, salted `MD5` is thus used as demonstration. 

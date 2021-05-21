@@ -12,6 +12,7 @@ linters-settings:
 linters:
   disable:
     - godox
+    - gosec
     - wrapcheck
     - gochecknoglobals
     - funlen
