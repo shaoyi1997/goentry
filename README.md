@@ -12,7 +12,7 @@
 0. Ensure that MySQL & Redis servers are running
 1. Create source directory
 ```bash
-mkdir $GOPATH/src/git.garena.com/shaoyi.hong/ && cd mkdir $GOPATH/src/git.garena.com/shaoyi.hong/
+mkdir $GOPATH/src/git.garena.com/shaoyi.hong/ && cd $GOPATH/src/git.garena.com/shaoyi.hong/
 ```
 2. Clone this repository
 ```bash
