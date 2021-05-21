@@ -50,8 +50,10 @@ func (service *Service) Update(messageByte []byte) ([]byte, error) {
 }
 
 func (service *Service) processUpdate(messageByte []byte) (*pb.User, *pb.UpdateResponse_ErrorCode) {
-	var args pb.UpdateRequest
-	var errorCode pb.UpdateResponse_ErrorCode
+	var (
+		args      pb.UpdateRequest
+		errorCode pb.UpdateResponse_ErrorCode
+	)
 
 	err := proto.Unmarshal(messageByte, &args)
 	if err != nil {
@@ -100,6 +102,7 @@ func (service *Service) processUpdate(messageByte []byte) (*pb.User, *pb.UpdateR
 // updateImage performs the img storage & updates profile url in db. It is a no-op if there is no given image data.
 func (service *Service) updateImage(args *pb.UpdateRequest) *pb.UpdateResponse_ErrorCode {
 	var errorCode pb.UpdateResponse_ErrorCode
+
 	username := args.GetUsername()
 	imageData := args.GetImageData()
 	imageFileExtension := args.GetImageFileType()
@@ -147,8 +150,10 @@ func (service *Service) Register(messageByte []byte) ([]byte, error) {
 }
 
 func (service *Service) processRegister(messageByte []byte) (*pb.User, string, *pb.LoginRegisterResponse_ErrorCode) {
-	var args pb.RegisterRequest
-	var errorCode pb.LoginRegisterResponse_ErrorCode
+	var (
+		args      pb.RegisterRequest
+		errorCode pb.LoginRegisterResponse_ErrorCode
+	)
 
 	err := proto.Unmarshal(messageByte, &args)
 	if err != nil {
@@ -223,8 +228,10 @@ func (service *Service) Logout(messageByte []byte) ([]byte, error) {
 }
 
 func (service *Service) processLogout(messageByte []byte) *pb.LogoutResponse_ErrorCode {
-	var args pb.LogoutRequest
-	var errorCode pb.LogoutResponse_ErrorCode
+	var (
+		args      pb.LogoutRequest
+		errorCode pb.LogoutResponse_ErrorCode
+	)
 
 	err := proto.Unmarshal(messageByte, &args)
 	if err != nil {
@@ -258,8 +265,10 @@ func (service *Service) Login(messageByte []byte) ([]byte, error) {
 }
 
 func (service *Service) processLogin(messageByte []byte) (*pb.User, string, *pb.LoginRegisterResponse_ErrorCode) {
-	var args pb.LoginRequest
-	var errorCode pb.LoginRegisterResponse_ErrorCode
+	var (
+		args      pb.LoginRequest
+		errorCode pb.LoginRegisterResponse_ErrorCode
+	)
 
 	err := proto.Unmarshal(messageByte, &args)
 	if err != nil {

@@ -1,4 +1,4 @@
-image: "harbor.shopeemobile.com/shopee/golang-base"
+image: "harbor.shopeemobile.com/shopee/golang-base:1.14.7"
 
 stages:
   - lint

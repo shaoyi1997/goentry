@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"mime/multipart"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -143,13 +144,7 @@ func (controller *UserController) extractUpdateRequest(ctx *fasthttp.RequestCtx)
 		return nil
 	}
 
-	nicknames := form.Value["nickname"]
-	var nickname string
-
-	if len(nicknames) > 0 {
-		nickname = nicknames[0]
-	}
-
+	nickname := extractNickname(form)
 	username := extractUsername(ctx)
 	token := extractToken(ctx)
 	encodedImageData, fileExtension := controller.extractImageDataAndExtension(ctx)
@@ -163,6 +158,18 @@ func (controller *UserController) extractUpdateRequest(ctx *fasthttp.RequestCtx)
 	}
 
 	return updateRequest
+}
+
+func extractNickname(form *multipart.Form) string {
+	nicknames := form.Value["nickname"]
+
+	var nickname string
+
+	if len(nicknames) > 0 {
+		nickname = nicknames[0]
+	}
+
+	return nickname
 }
 
 func (controller *UserController) extractImageDataAndExtension(ctx *fasthttp.RequestCtx) (string, string) {

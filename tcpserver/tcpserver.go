@@ -116,8 +116,11 @@ func handleConn(conn net.Conn) {
 }
 
 func routeRequest(messageBuffer []byte) ([]byte, error) {
-	var responseMessage []byte
-	var err error
+	var (
+		responseMessage []byte
+		err             error
+	)
+
 	method := binary.BigEndian.Uint32(messageBuffer[:4])
 
 	switch method {
