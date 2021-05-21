@@ -1,6 +1,7 @@
 MAKEFLAGS += -j3
 
 run: tcpserver fileserver httpserver
+run-no-fs: tcpserver httpserver
 
 .PHONY: tcpserver
 tcpserver:
@@ -12,7 +13,7 @@ fileserver:
 
 .PHONY: httpserver
 httpserver:
-	sleep 3 # to allow time for tcpserver to start up
+	sleep 1 # to allow time for tcpserver to start up
 	go run httpserver/httpserver.go
 
 .PHONY: setup

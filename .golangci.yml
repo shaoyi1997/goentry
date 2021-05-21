@@ -16,4 +16,5 @@ linters:
     - wrapcheck
     - gochecknoglobals
     - funlen
+    - exhaustivestruct
   enable-all: true

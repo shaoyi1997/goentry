@@ -138,6 +138,20 @@ func routeRequest(messageBuffer []byte) ([]byte, error) {
 
 			return nil, err
 		}
+	case uint32(pb.RpcRequest_Register):
+		responseMessage, err = service.User.Register(messageBuffer[4:])
+		if err != nil {
+			logger.ErrorLogger.Println("Failed to register user:", err)
+
+			return nil, err
+		}
+	case uint32(pb.RpcRequest_GetUser):
+		responseMessage, err = service.User.GetUser(messageBuffer[4:])
+		if err != nil {
+			logger.ErrorLogger.Println("Failed to get user:", err)
+
+			return nil, err
+		}
 	}
 
 	return responseMessage, err

@@ -13,11 +13,13 @@ import (
 
 const (
 	tokenExpiryTime = 5
+	tokenSuffix     = "-token"
 )
 
 type ISessionManager interface {
 	SetCacheToken(username string) (string, error)
 	GetCacheToken(username string) (string, error)
+	GetCacheUsername(token string) (string, error)
 	DeleteCacheToken(username string)
 }
 
@@ -39,7 +41,11 @@ func createSessionID() string {
 }
 
 func createKeyFromUsername(username string) string {
-	return username + "-token"
+	return username + tokenSuffix
+}
+
+func generateUsernameFromKey(key string) string {
+	return key[:len(key)-len(tokenSuffix)]
 }
 
 func (manager *SessionManager) SetCacheToken(username string) (string, error) {
@@ -48,6 +54,12 @@ func (manager *SessionManager) SetCacheToken(username string) (string, error) {
 
 	if err := manager.redis.Set(context.Background(), key, token, time.Minute*tokenExpiryTime).Err(); err != nil {
 		logger.ErrorLogger.Println("Failed to set cache token:", err)
+
+		return "", err
+	}
+
+	if err := manager.redis.Set(context.Background(), token, key, time.Minute*tokenExpiryTime).Err(); err != nil {
+		logger.ErrorLogger.Println("Failed to set reverse cache token:", err)
 
 		return "", err
 	}
@@ -62,6 +74,15 @@ func (manager *SessionManager) GetCacheToken(username string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (manager *SessionManager) GetCacheUsername(token string) (string, error) {
+	key, err := manager.redis.Get(context.Background(), token).Result()
+	if err != nil {
+		return "", err
+	}
+
+	return generateUsernameFromKey(key), nil
 }
 
 func (manager *SessionManager) DeleteCacheToken(username string) {

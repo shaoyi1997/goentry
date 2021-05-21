@@ -25,18 +25,9 @@ func main() {
 func generateRequestHandler() func(ctx *fasthttp.RequestCtx) {
 	fs := &fasthttp.FS{ //nolint:exhaustivestruct
 		Root:               "./",
-		GenerateIndexPages: true,
+		GenerateIndexPages: false,
 		Compress:           false,
 	}
 
-	fsHandler := fs.NewRequestHandler()
-
-	requestHandler := func(ctx *fasthttp.RequestCtx) {
-		switch string(ctx.Path()) {
-		default:
-			fsHandler(ctx)
-		}
-	}
-
-	return requestHandler
+	return fs.NewRequestHandler()
 }

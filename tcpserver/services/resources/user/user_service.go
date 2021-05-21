@@ -38,6 +38,59 @@ func (service *Service) GetByUsername(username string) (*pb.User, error) {
 	return service.repo.GetByUsername(username, true)
 }
 
+// GetByToken retrieves a user by the token.
+func (service *Service) GetByToken(token string) (*pb.User, error) {
+	username, err := service.sessionManager.GetCacheUsername(token)
+	if err != nil {
+		return nil, err
+	}
+
+	return service.GetByUsername(username)
+}
+
+// GetUser retrieves a user by either its username or session token.
+func (service *Service) GetUser(messageByte []byte) ([]byte, error) {
+	user, errorCode := service.processGetUser(messageByte)
+	response := &pb.GetUserResponse{
+		User:  user,
+		Error: errorCode,
+	}
+
+	return serializeResponse(pb.RpcRequest_GetUser, response)
+}
+
+func (service *Service) processGetUser(messageByte []byte) (*pb.User, *pb.GetUserResponse_ErrorCode) {
+	var (
+		args      pb.GetUserRequest
+		errorCode = pb.GetUserResponse_InternalServerError
+	)
+
+	err := proto.Unmarshal(messageByte, &args)
+	if err != nil {
+		logger.ErrorLogger.Println("Failed to unmarshal message:", err)
+
+		return nil, &errorCode
+	}
+
+	if token := args.GetToken(); token != "" {
+		user, _ := service.GetByToken(token)
+		if user != nil {
+			return user, nil
+		}
+	}
+
+	if username := args.GetUsername(); username != "" {
+		user, _ := service.GetByUsername(username)
+		if user != nil {
+			return user, nil
+		}
+	}
+
+	errorCode = pb.GetUserResponse_UserNotFound
+
+	return nil, &errorCode
+}
+
 // Update a user via the provided `UpdateRequest`.
 func (service *Service) Update(messageByte []byte) ([]byte, error) {
 	user, errorCode := service.processUpdate(messageByte)
@@ -183,6 +236,10 @@ func (service *Service) executeRegister(args *pb.RegisterRequest) (*pb.User, str
 			errorCode = pb.LoginRegisterResponse_InvalidPassword
 		}
 
+		logger.ErrorLogger.Println("Failed to validate register:", err)
+
+		errorCode = pb.LoginRegisterResponse_InternalServerError
+
 		return nil, "", &errorCode
 	}
 
@@ -202,6 +259,12 @@ func (service *Service) executeRegister(args *pb.RegisterRequest) (*pb.User, str
 
 			return nil, "", &errorCode
 		}
+
+		logger.ErrorLogger.Println("Failed to insert user:", err)
+
+		errorCode = pb.LoginRegisterResponse_InternalServerError
+
+		return nil, "", &errorCode
 	}
 
 	token, err := service.sessionManager.SetCacheToken(user.GetUsername())

@@ -13,6 +13,7 @@ import (
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"git.garena.com/shaoyihong/go-entry-task/common/pb"
 	"git.garena.com/shaoyihong/go-entry-task/httpserver/rpc"
+	"git.garena.com/shaoyihong/go-entry-task/httpserver/view"
 	"github.com/valyala/fasthttp"
 )
 
@@ -21,32 +22,44 @@ const (
 	maxImageSize = 5000000
 )
 
+var tmpl = template.Must(template.ParseGlob("httpserver/view/*.html"))
+
 type UserController struct {
-	client          rpc.IRPCClient
-	profileTemplate *template.Template
-	loginTemplate   *template.Template
+	client rpc.IRPCClient
 }
 
 func NewUserController(rpcClient rpc.IRPCClient) UserController {
 	return UserController{
-		client:          rpcClient,
-		profileTemplate: template.Must(template.ParseFiles("./httpserver/view/profile.html")),
-		loginTemplate:   template.Must(template.ParseFiles("./httpserver/view/login.html")),
+		client: rpcClient,
 	}
 }
 
-func (controller *UserController) LoginHandler(ctx *fasthttp.RequestCtx) {
+func (controller *UserController) LoginRegisterHandler(ctx *fasthttp.RequestCtx, isLogin bool) {
 	username := string(ctx.FormValue("username"))
 	password := string(ctx.FormValue("password"))
 
-	loginRequest := &pb.LoginRequest{
-		Username: &username,
-		Password: &password,
+	var (
+		request interface{}
+		method  pb.RpcRequest_Method
+	)
+
+	if isLogin {
+		request = &pb.LoginRequest{
+			Username: &username,
+			Password: &password,
+		}
+		method = pb.RpcRequest_Login
+	} else {
+		request = &pb.RegisterRequest{
+			Username: &username,
+			Password: &password,
+		}
+		method = pb.RpcRequest_Register
 	}
 
 	response := new(pb.LoginRegisterResponse)
 
-	err := controller.client.CallMethod(pb.RpcRequest_Login, loginRequest, response)
+	err := controller.client.CallMethod(method, request, response)
 	if err != nil {
 		ctx.Error(err.Error(), http.StatusInternalServerError)
 
@@ -55,7 +68,7 @@ func (controller *UserController) LoginHandler(ctx *fasthttp.RequestCtx) {
 
 	responseError := response.GetError()
 	if responseError != pb.LoginRegisterResponse_Ok {
-		executeTemplate(ctx, controller.loginTemplate, nil)
+		executeTemplate(ctx, view.Templates.Login, nil) // TODO: process error
 
 		return
 	}
@@ -68,18 +81,41 @@ func (controller *UserController) LoginHandler(ctx *fasthttp.RequestCtx) {
 	}
 
 	setSessionIDCookie(ctx, token)
-	executeTemplate(ctx, controller.profileTemplate, response.User)
+	ctx.Redirect("/profile", http.StatusFound)
 }
 
-func setSessionIDCookie(ctx *fasthttp.RequestCtx, token string) {
-	exp := time.Now().AddDate(0, 0, 1)
-	cookie := fasthttp.Cookie{}
-	cookie.SetKey(tokenKey)
-	cookie.SetValue(token)
-	cookie.SetExpire(exp)
-	cookie.SetHTTPOnly(true)
-	cookie.SetSecure(true)
-	ctx.Response.Header.SetCookie(&cookie)
+// GetProfilePage renders the profile page by the session token.
+func (controller *UserController) GetProfilePage(ctx *fasthttp.RequestCtx) {
+	token := extractToken(ctx)
+	if token == "" {
+		ctx.Redirect("/login", http.StatusFound)
+
+		return
+	}
+
+	getUserRequest := &pb.GetUserRequest{Token: &token}
+
+	response := new(pb.GetUserResponse)
+
+	err := controller.client.CallMethod(pb.RpcRequest_GetUser, getUserRequest, response)
+	if err != nil {
+		ctx.Error(err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	responseErr := response.GetError()
+	if responseErr != pb.GetUserResponse_Ok {
+		if responseErr == pb.GetUserResponse_UserNotFound {
+			removeSessionIDCookie(ctx)
+			ctx.Redirect("/login", http.StatusFound)
+
+			return
+		}
+	}
+
+	user := response.GetUser()
+	executeTemplate(ctx, view.Templates.Profile, user)
 }
 
 func (controller *UserController) LogoutHandler(ctx *fasthttp.RequestCtx) {
@@ -100,11 +136,7 @@ func (controller *UserController) LogoutHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	executeTemplate(ctx, controller.loginTemplate, nil)
-}
-
-func (controller *UserController) RegisterHandler(ctx *fasthttp.RequestCtx) {
-	fmt.Fprintf(ctx, "RegisterHandler")
+	executeTemplate(ctx, view.Templates.Login, nil)
 }
 
 func (controller *UserController) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
@@ -123,12 +155,12 @@ func (controller *UserController) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 
 	responseErr := response.GetError()
 	if responseErr == pb.UpdateResponse_InvalidToken {
-		executeTemplate(ctx, controller.loginTemplate, nil)
+		executeTemplate(ctx, view.Templates.Login, nil)
 	} else if responseErr != pb.UpdateResponse_Ok {
-		executeTemplate(ctx, controller.loginTemplate, nil) // TODO: error in profile
+		executeTemplate(ctx, view.Templates.Login, nil) // TODO: error in profile
 	}
 
-	executeTemplate(ctx, controller.profileTemplate, response.User)
+	executeTemplate(ctx, view.Templates.Profile, response.User)
 }
 
 func (controller *UserController) extractUpdateRequest(ctx *fasthttp.RequestCtx) *pb.UpdateRequest {
@@ -223,6 +255,42 @@ func (controller *UserController) UploadProfileImageHandler(ctx *fasthttp.Reques
 	fmt.Fprintf(ctx, "UploadProfileImageHandler")
 }
 
+func (controller *UserController) GetLoginHandler(ctx *fasthttp.RequestCtx) {
+	if isRedirected := controller.redirectIfCtxHasValidToken(ctx); isRedirected {
+		return
+	}
+
+	executeTemplate(ctx, view.Templates.Login, nil)
+}
+
+func (controller *UserController) GetRegisterHandler(ctx *fasthttp.RequestCtx) {
+	if isRedirected := controller.redirectIfCtxHasValidToken(ctx); isRedirected {
+		return
+	}
+
+	executeTemplate(ctx, view.Templates.Register, nil)
+}
+
+func (controller *UserController) redirectIfCtxHasValidToken(ctx *fasthttp.RequestCtx) bool {
+	if token := extractToken(ctx); token == "" {
+		return false
+	}
+
+	ctx.Redirect("/profile", http.StatusFound)
+
+	return true
+}
+
+func executeTemplate(ctx *fasthttp.RequestCtx, template view.TemplateString, data interface{}) {
+	err := tmpl.ExecuteTemplate(ctx, string(template), data)
+	if err != nil {
+		logger.ErrorLogger.Println("Failed to execute profile template:", err)
+		ctx.Error(err.Error(), http.StatusInternalServerError)
+	}
+
+	ctx.SetContentType("text/html; charset=utf-8")
+}
+
 func extractUsername(ctx *fasthttp.RequestCtx) string {
 	return fmt.Sprintf("%v", ctx.UserValue("username"))
 }
@@ -231,16 +299,22 @@ func extractToken(ctx *fasthttp.RequestCtx) string {
 	return string(ctx.Request.Header.Cookie(tokenKey))
 }
 
-func (controller *UserController) GetLoginHandler(ctx *fasthttp.RequestCtx) {
-	executeTemplate(ctx, controller.loginTemplate, nil)
+func setSessionIDCookie(ctx *fasthttp.RequestCtx, token string) {
+	exp := time.Now().AddDate(0, 0, 1)
+	addCookie(ctx, exp, tokenKey, token)
 }
 
-func executeTemplate(ctx *fasthttp.RequestCtx, template *template.Template, data interface{}) {
-	err := template.Execute(ctx, data)
-	if err != nil {
-		logger.ErrorLogger.Println("Failed to execute profile template:", err)
-		ctx.Error(err.Error(), http.StatusInternalServerError)
-	}
+func removeSessionIDCookie(ctx *fasthttp.RequestCtx) {
+	exp := time.Now().AddDate(0, 0, -1)
+	addCookie(ctx, exp, tokenKey, "")
+}
 
-	ctx.SetContentType("text/html; charset=utf-8")
+func addCookie(ctx *fasthttp.RequestCtx, exp time.Time, key, value string) {
+	cookie := fasthttp.Cookie{}
+	cookie.SetKey(key)
+	cookie.SetValue(value)
+	cookie.SetExpire(exp)
+	cookie.SetHTTPOnly(true)
+	cookie.SetSecure(true)
+	ctx.Response.Header.SetCookie(&cookie)
 }

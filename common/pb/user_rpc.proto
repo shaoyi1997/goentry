@@ -11,6 +11,7 @@ message RpcRequest {
     Update = 3;
     Upload = 4;
     Register = 5;
+    GetUser = 6;
   }
   required Method method = 1;
   optional string token = 2;
@@ -69,7 +70,7 @@ message UpdateResponse {
   }
 
   optional User user = 1;
-  optional ErrorCode error = 3;
+  optional ErrorCode error = 2;
 }
 
 message RegisterRequest {
@@ -78,3 +79,18 @@ message RegisterRequest {
   optional string nickname = 3;
 }
 
+message GetUserRequest {
+  optional string username = 1;
+  optional string token = 2;
+}
+
+message GetUserResponse {
+  enum ErrorCode {
+    Ok = 0;
+    UserNotFound = 1;
+    InternalServerError = 2;
+  }
+
+  optional User user = 1;
+  optional ErrorCode error = 2;
+}

@@ -3,14 +3,17 @@ package user
 import (
 	"crypto/md5"
 	"crypto/rand"
-	"encoding/base64"
+	"encoding/hex"
+	"fmt"
+	"strings"
 
 	"git.garena.com/shaoyihong/go-entry-task/common/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
 const (
-	isUsingMd5 = true
+	isUsingMd5                    = true
+	lengthOfSeparatedPasswordHash = 2
 )
 
 type IPasswordHasher interface {
@@ -48,16 +51,25 @@ func (*bcryptPasswordHasher) ComparePasswords(hashedPassword string, plainPasswo
 
 func (*md5PasswordHasher) Hash(password string) (string, error) {
 	salt := generateRandomSalt()
+
+	return md5Hash(password, salt)
+}
+
+func md5Hash(password string, salt []byte) (string, error) {
 	passwordBytes := append([]byte(password), salt...)
 	hash := md5.New()
-	hash.Write(passwordBytes)
-	hashedPassword := hash.Sum(nil)
 
-	return base64.URLEncoding.EncodeToString(hashedPassword), nil
+	hash.Write(passwordBytes)
+
+	encodedPassword := hex.EncodeToString(hash.Sum(nil))
+	encodedSalt := hex.EncodeToString(salt)
+	encodedPasswordWithSalt := fmt.Sprintf("%s:%s", encodedPassword, encodedSalt)
+
+	return encodedPasswordWithSalt, nil
 }
 
 func generateRandomSalt() []byte {
-	salt := make([]byte, 16)
+	salt := make([]byte, 8)
 
 	if _, err := rand.Read(salt); err != nil {
 		panic(err)
@@ -66,8 +78,20 @@ func generateRandomSalt() []byte {
 	return salt
 }
 
-func (hasher *md5PasswordHasher) ComparePasswords(hashedPassword string, plainPassword string) bool {
-	digest, _ := hasher.Hash(plainPassword)
+func (*md5PasswordHasher) ComparePasswords(hashedPassword string, plainPassword string) bool {
+	separatedPasswordSalt := strings.Split(hashedPassword, ":")
+	if len(separatedPasswordSalt) != lengthOfSeparatedPasswordHash {
+		return false
+	}
+
+	encodedSalt := separatedPasswordSalt[1]
+
+	decodedSalt, err := hex.DecodeString(encodedSalt)
+	if err != nil {
+		return false
+	}
+
+	digest, _ := md5Hash(plainPassword, decodedSalt)
 
 	return digest == hashedPassword
 }
