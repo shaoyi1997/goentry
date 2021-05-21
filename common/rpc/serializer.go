@@ -81,6 +81,7 @@ func ReadMessageBufferFromConnection(conn net.Conn) ([]byte, error) {
 	length := binary.BigEndian.Uint32(lenByte[:])
 
 	buffer := make([]byte, length)
+
 	var totalLengthRead uint32
 
 	for {

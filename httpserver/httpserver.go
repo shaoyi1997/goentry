@@ -23,6 +23,7 @@ var (
 func main() {
 	logger.InitLogger()
 	config.InitConfig()
+
 	var err error
 
 	rpcClient, err = rpc.NewRPCClient()

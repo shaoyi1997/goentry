@@ -20,10 +20,12 @@ type Database struct {
 
 func InitDB() *Database {
 	databaseConfig := config.GetDatabaseConfig()
+
 	var err error
 	db, err = sql.Open(databaseConfig.Driver, databaseConfig.ConnectionURL)
 	validateDBConnection(err)
 	logger.InfoLogger.Println("Database connection initialised successfully")
+
 	configDB(databaseConfig)
 	createDB(databaseConfig)
 

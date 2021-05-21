@@ -8,8 +8,6 @@ linters-settings:
   gocritic:
     disabled-checks:
       - singleCaseSwitch
-  wsl:
-    allow-cuddle-declarations: true
 
 linters:
   disable:
