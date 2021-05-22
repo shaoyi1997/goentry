@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	tokenExpiryTime = 5
-	tokenSuffix     = "-token"
+	tokenExpiryTimeInHours = 12
+	tokenSuffix            = "-token"
 )
 
 type ISessionManager interface {
@@ -52,13 +52,13 @@ func (manager *SessionManager) SetCacheToken(username string) (string, error) {
 	token := createSessionID()
 	key := createKeyFromUsername(username)
 
-	if err := manager.redis.Set(context.Background(), key, token, time.Minute*tokenExpiryTime).Err(); err != nil {
+	if err := manager.redis.Set(context.Background(), key, token, time.Hour*tokenExpiryTimeInHours).Err(); err != nil {
 		logger.ErrorLogger.Println("Failed to set cache token:", err)
 
 		return "", err
 	}
 
-	if err := manager.redis.Set(context.Background(), token, key, time.Minute*tokenExpiryTime).Err(); err != nil {
+	if err := manager.redis.Set(context.Background(), token, key, time.Hour*tokenExpiryTimeInHours).Err(); err != nil {
 		logger.ErrorLogger.Println("Failed to set reverse cache token:", err)
 
 		return "", err

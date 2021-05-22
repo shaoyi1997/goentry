@@ -11,15 +11,19 @@
         <img id="imageResult" src="{{.ProfileImage}}" class="rounded-circle profile-image">
         <div class="pl-sm-4 pl-2" id="img-section">
           <b>Profile Photo</b>
-          <p>Less than 5MB</p>
-          <input class="form-control form-control-sm" type="file" name="profile_image" id="upload" onchange="readURL(this);">
+          <p>Must be less than 5MB</p>
+          <input class="form-control form-control-sm" type="file" name="profile_image" id="upload"
+                 accept="image/png,image/jpg,image/jpeg,image/bmp"
+                 onclick="onClickUpload()"
+                 onchange="readURL(this);">
+          <p id="image-feedback" class="pt-1">Image file is too large!</p>
         </div>
       </div>
       <div class="py-2">
         <div class="row py-2">
           <div class="col-md-6">
             <label for="username">Username</label>
-            <input type="text" class="bg-light form-control" value="{{.Username}}" id="username" name="username" disabled>
+            <input type="text" class="bg-light form-control" value="{{.Username}}" id="username" name="username" readonly>
           </div>
           <div class="col-md-6 pt-md-0 pt-3">
             <label for="nickname">Nickname</label>

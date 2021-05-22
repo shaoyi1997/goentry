@@ -118,3 +118,8 @@ select:focus {
     border: 1px solid #dee2e6;
     margin-right: 20px;
 }
+
+#image-feedback {
+    display: none;
+    color: red !important;
+}

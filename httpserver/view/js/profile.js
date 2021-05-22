@@ -1,19 +1,29 @@
 function readURL(input) {
+    const maxFileSize = 50000000
+
     if (input.files && input.files[0]) {
+        if (input.files[0].size > maxFileSize) {
+            input.value = "";
+            document.getElementById("image-feedback").style.display = "inherit";
+            return
+        }
+
         const reader = new FileReader();
         reader.onload = function (e) {
-            $('#imageResult').attr('src', e.target.result);
+            document.getElementById("image-feedback").src = e.target.result;
         };
         reader.readAsDataURL(input.files[0]);
         enableSubmitButton()
     }
 }
 
+function onClickUpload() {
+    document.getElementById("image-feedback").style.display = "none";
+}
+
 function onNicknameChange() {
     const nickname = document.getElementById("nickname")
     const originalNickname = nickname.defaultValue
-    console.log(originalNickname)
-    console.log(nickname.value)
 
     if (nickname.value !== originalNickname) {
         enableSubmitButton()
