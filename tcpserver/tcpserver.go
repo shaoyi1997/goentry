@@ -55,7 +55,7 @@ func initTCPListener() net.Listener {
 
 func runAcceptLoop(listener net.Listener) {
 	for {
-		conn, err := listener.Accept() // TODO: set deadline?
+		conn, err := listener.Accept()
 		if err != nil {
 			if isShutdownInitiated {
 				break

@@ -259,7 +259,7 @@ func (service *Service) executeRegister(args *pb.RegisterRequest) (*pb.User, str
 	user, err := service.repo.Insert(username, hashedPassword, nickname, defaultAvatarURL)
 	if err != nil {
 		if errors.Is(err, errUsernameAlreadyExists) {
-			errorCode = pb.LoginRegisterResponse_InvalidUsername
+			errorCode = pb.LoginRegisterResponse_UsernameTaken
 
 			return nil, "", &errorCode
 		}

@@ -1,4 +1,4 @@
-{{ define "Login" }}
+{{ define "LoginRegister" }}
 {{ template "Header" }}
 <link href="/css/login_register.css" rel="stylesheet">
 <script text="text/javascript" src="/js/login_register.js"></script>
@@ -6,38 +6,57 @@
     <div class="row">
       <div class="panel border bg-white">
         <div class="panel-heading border-bottom p-3">
-          <h3 class="font-weight-bold">Login</h3>
+          <h3 class="font-weight-bold">{{if .IsLoginPage}}Login{{else}}Register{{end}}</h3>
         </div>
         <div class="panel-body p-3">
-          <form action="/login" method="POST" name="loginForm">
+          <form action="{{if .IsLoginPage}}/login{{else}}/register{{end}}" method="POST" name="loginForm">
             <div class="form-group py-2">
               <div class="input-field">
                 <span class="far fa-user p-2"></span>
                 <input type="text" placeholder="Username" name="username"
                        required
                        pattern="[A-Za-z0-9]{3,16}"
-                       oninvalid="setCustomValidity('Please enter an alphanumeric username containing 3 - 16 characters')"
+                       oninvalid="setCustomValidity('Please enter a username containing 3 - 16 alphanumeric  characters')"
                        oninput="setCustomValidity('')">
               </div>
+              <p>
+                {{if .InvalidUsername}}
+                  Invalid username
+                {{else if .UsernameTaken}}
+                  Username is arleady taken
+                {{end}}
+              </p>
             </div>
             <div class="form-group py-1 pb-2">
               <div class="input-field">
                 <span class="fas fa-lock px-2"></span>
                 <input type="password" id="password" name="password" placeholder="Password"
                        required
-                       pattern="[A-Za-z0-9]+"
-                       oninvalid="setCustomValidity('Please enter an alphanumeric password')"
+                       pattern="[A-Za-z0-9]{4,}"
+                       oninvalid="setCustomValidity('Please enter a password containing at least 4 alphanumeric characters')"
                        oninput="setCustomValidity('')">
                   <button type="button" class="btn bg-white text-muted" onclick="revealPassword(event)">
                     <span class="far fa-eye-slash" id="togglePassword"></span>
                   </button>
                 </input>
               </div>
+              <p>
+                {{if .InvalidPassword}}
+                Invalid password
+                {{end}}
+              </p>
             </div>
+            {{if .IsLoginPage}}
             <div class="d-grid gap-2">
               <button class="btn btn-primary mt-3" type="submit">Login</button>
             </div>
             <div class="text-center pt-4 text-muted">Don't have an account? <a href="/register">Register</a> </div>
+            {{else}}
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary mt-3" type="submit">Register</button>
+            </div>
+            <div class="text-center pt-4 text-muted">Already have an account? <a href="/login">Login</a> </div>
+            {{end}}
           </form>
         </div>
       </div>

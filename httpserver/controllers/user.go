@@ -68,7 +68,23 @@ func (controller *UserController) LoginRegisterHandler(ctx *fasthttp.RequestCtx,
 
 	responseError := response.GetError()
 	if responseError != pb.LoginRegisterResponse_Ok {
-		executeTemplate(ctx, view.Templates.Login, nil) // TODO: process error
+		data := &view.LoginRegisterPageData{}
+
+		switch responseError { //nolint:exhaustive
+		case pb.LoginRegisterResponse_InvalidPassword:
+			data.IsLoginPage = true
+			data.InvalidPassword = true
+		case pb.LoginRegisterResponse_InvalidUsername:
+			data.IsLoginPage = true
+			data.InvalidUsername = true
+		case pb.LoginRegisterResponse_UsernameTaken:
+			data.IsLoginPage = false
+			data.UsernameTaken = true
+		default:
+			data.IsLoginPage = true
+		}
+
+		executeTemplate(ctx, view.Templates.LoginRegister, data)
 
 		return
 	}
@@ -176,7 +192,11 @@ func (controller *UserController) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 		removeSessionIDCookie(ctx)
 		redirectToLoginPage(ctx)
 	} else if responseErr != pb.UpdateResponse_Ok {
-		executeTemplate(ctx, view.Templates.Login, nil) // TODO: error in profile
+		data := &view.LoginRegisterPageData{
+			IsLoginPage: true,
+		}
+
+		executeTemplate(ctx, view.Templates.LoginRegister, data)
 	}
 
 	redirectToProfilePage(ctx)
@@ -270,16 +290,15 @@ func (controller *UserController) extractImageDataAndExtension(ctx *fasthttp.Req
 	return encodedImageData, fileExtension
 }
 
-func (controller *UserController) UploadProfileImageHandler(ctx *fasthttp.RequestCtx) {
-	fmt.Fprintf(ctx, "UploadProfileImageHandler")
-}
-
 func (controller *UserController) GetLoginHandler(ctx *fasthttp.RequestCtx) {
 	if isRedirected := controller.redirectIfCtxHasValidToken(ctx); isRedirected {
 		return
 	}
 
-	executeTemplate(ctx, view.Templates.Login, nil)
+	data := &view.LoginRegisterPageData{
+		IsLoginPage: true,
+	}
+	executeTemplate(ctx, view.Templates.LoginRegister, data)
 }
 
 func (controller *UserController) GetRegisterHandler(ctx *fasthttp.RequestCtx) {
@@ -287,7 +306,10 @@ func (controller *UserController) GetRegisterHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	executeTemplate(ctx, view.Templates.Register, nil)
+	data := &view.LoginRegisterPageData{
+		IsLoginPage: false,
+	}
+	executeTemplate(ctx, view.Templates.LoginRegister, data)
 }
 
 func (controller *UserController) redirectIfCtxHasValidToken(ctx *fasthttp.RequestCtx) bool {

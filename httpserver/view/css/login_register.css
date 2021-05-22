@@ -40,6 +40,13 @@ a:hover {
     color: #4343ff
 }
 
+.form-group > p {
+    font-size: 12px;
+    color: red;
+    text-align: justify;
+    margin: 5px 0 0 10px;
+}
+
 input[type='text'],
 input[type='password'] {
     border: none;

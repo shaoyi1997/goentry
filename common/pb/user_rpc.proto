@@ -26,8 +26,9 @@ message LoginRegisterResponse {
     Ok = 0;
     InvalidUsername = 1;
     InvalidPassword = 2;
-    MissingCredentials = 3;
-    InternalServerError = 4;
+    UsernameTaken = 3;
+    MissingCredentials = 4;
+    InternalServerError = 5;
   }
 
   optional User user = 1;

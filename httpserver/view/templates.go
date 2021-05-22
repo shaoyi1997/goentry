@@ -1,14 +1,20 @@
 package view
 
 var Templates = &Template{
-	Login:    "Login",
-	Register: "Register",
-	Profile:  "Profile",
-	Edit:     "Edit",
+	LoginRegister: "LoginRegister",
+	Profile:       "Profile",
+	Edit:          "Edit",
 }
 
 type TemplateString string
 
 type Template struct {
-	Login, Register, Profile, Edit TemplateString
+	LoginRegister, Profile, Edit TemplateString
+}
+
+type LoginRegisterPageData struct {
+	IsLoginPage     bool
+	UsernameTaken   bool
+	InvalidUsername bool
+	InvalidPassword bool
 }
