@@ -26,4 +26,5 @@ go mod download
 ```bash
 make run
 ```
+5. Navigate to `localhost` in your browser to view the user management portal
 
