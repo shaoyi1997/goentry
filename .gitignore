@@ -2,5 +2,8 @@
 logs.txt
 
 # image files
-images/
+#images/
+#!images/defaultAvatar.png
+
+images/*
 !images/defaultAvatar.png
