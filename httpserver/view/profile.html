@@ -1,25 +1,32 @@
 {{ define "Profile" }}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Profile</title>
-</head>
-<body>
-    <div>Username:{{.Username}}</div>
-    <div>
-        <img src="{{.ProfileImage}}" height="130" width="130">
-    </div>
-    <div>
-        <form enctype="multipart/form-data" action="/user/{{.Username}}/" method="POST">
-            <label>Nickname:</label>
-            <input type="text" name="nickname" value="{{.Nickname}}" />
-            <input type="file" name="profile_image" />
-            <input type="submit" value="Update" />
-        </form>
-    </div>
-</body>
-</html>
-
+{{ template "Header" }}
+{{ template "NavBar" . }}
+<link href="/css/profile.css" rel="stylesheet">
+<script text="text/javascript" src="/js/profile.js"></script>
+<div class="container">
+  <div class="wrapper bg-white">
+    <h3 class="pb-4 border-bottom">Your Profile</h3>
+      <div class="d-flex justify-content-center py-3">
+        <img src="{{.ProfileImage}}" class="profile-image rounded-circle">
+      </div>
+      <div class="py-2">
+        <div class="row py-2">
+          <div class="col-md-6">
+            <label for="username">Username</label>
+            <input type="text" class="bg-light form-control" value="{{.Username}}" id="username" name="username" disabled>
+          </div>
+          <div class="col-md-6 pt-md-0 pt-3">
+            <label for="nickname">Nickname</label>
+            <input type="text" class="bg-light form-control" value="{{.Nickname}}" id="nickname" name="nickname" disabled>
+          </div>
+        </div>
+        <div class="pt-3 d-flex justify-content-end">
+          <a href="/edit">
+            <button class="btn btn-primary mr-5 btn-sm">Edit</button>
+          </a>
+        </div>
+      </div>
+  </div>
+</div>
+{{ template "Footer" }}
 {{ end }}

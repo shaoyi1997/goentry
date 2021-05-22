@@ -1,6 +1,8 @@
 {{ define "Register" }}
-  {{ template "Header" }}
-  <div class="container">
+{{ template "Header" }}
+<link href="/css/login_register.css" rel="stylesheet">
+<script text="text/javascript" src="/js/login_register.js"></script>
+<div class="container">
     <div class="row">
       <div class="panel border bg-white">
         <div class="panel-heading">
@@ -11,17 +13,23 @@
             <div class="form-group py-2">
               <div class="input-field">
                 <span class="far fa-user p-2"></span>
-                <input type="text" placeholder="Username" name="username" required oninvalid="this.setCustomValidity('Please fill in your username')"
+                <input type="text" placeholder="Username" name="username"
+                       required
+                       pattern="[A-Za-z0-9]{3,16}"
+                       oninvalid="setCustomValidity('Please enter an alphanumeric username containing 3 - 16 characters')"
                        oninput="setCustomValidity('')">
               </div>
             </div>
             <div class="form-group py-1 pb-2">
               <div class="input-field">
                 <span class="fas fa-lock px-2"></span>
-                <input type="password" name="password" placeholder="Password" required oninvalid="this.setCustomValidity('Please fill in your password')"
+                <input type="password" id="password" name="password" placeholder="Password"
+                       required
+                       pattern="[A-Za-z0-9]+"
+                       oninvalid="setCustomValidity('Please enter an alphanumeric password')"
                        oninput="setCustomValidity('')">
-                <button class="btn bg-white text-muted">
-                  <span class="far fa-eye-slash"></span>
+                <button type="button" class="btn bg-white text-muted" onclick="revealPassword(event)">
+                  <span class="far fa-eye-slash" id="togglePassword"></span>
                 </button>
                 </input>
               </div>
@@ -34,6 +42,6 @@
         </div>
       </div>
     </div>
-  </div>
-  {{ template "Footer" }}
+</div>
+{{ template "Footer" }}
 {{ end }}

@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,11 +18,11 @@ import (
 
 var (
 	compress    = flag.Bool("compress", false, "Whether to enable transparent response compression")
+	pprof       = flag.Bool("pprof", false, "Whether to enable pprof")
 	quitChannel = make(chan os.Signal)
 	rpcClient   rpc.IRPCClient
 )
 
-// TODO: shutdown routine.
 func main() {
 	logger.InitLogger()
 	config.InitConfig()
@@ -38,7 +41,14 @@ func main() {
 		handler = fasthttp.CompressHandler(handler)
 	}
 
+	if *pprof {
+		go func() {
+			log.Println(http.ListenAndServe("localhost:6060", nil))
+		}()
+	}
+
 	go monitorForGracefulShutdown()
+
 	logger.InfoLogger.Println("HTTP server is listening on port:", 80)
 	logger.ErrorLogger.Fatalln(fasthttp.ListenAndServe(":80", handler))
 }

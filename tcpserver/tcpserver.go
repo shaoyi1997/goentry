@@ -122,36 +122,25 @@ func routeRequest(messageBuffer []byte) ([]byte, error) {
 	)
 
 	method := binary.BigEndian.Uint32(messageBuffer[:4])
+	message := messageBuffer[4:]
 
 	switch method {
 	case uint32(pb.RpcRequest_Login):
-		responseMessage, err = service.User.Login(messageBuffer[4:])
-		if err != nil {
-			logger.ErrorLogger.Println("Failed to login:", err)
-
-			return nil, err
-		}
+		responseMessage, err = service.User.Login(message)
 	case uint32(pb.RpcRequest_Update):
-		responseMessage, err = service.User.Update(messageBuffer[4:])
-		if err != nil {
-			logger.ErrorLogger.Println("Failed to update user:", err)
-
-			return nil, err
-		}
+		responseMessage, err = service.User.Update(message)
 	case uint32(pb.RpcRequest_Register):
-		responseMessage, err = service.User.Register(messageBuffer[4:])
-		if err != nil {
-			logger.ErrorLogger.Println("Failed to register user:", err)
-
-			return nil, err
-		}
+		responseMessage, err = service.User.Register(message)
 	case uint32(pb.RpcRequest_GetUser):
-		responseMessage, err = service.User.GetUser(messageBuffer[4:])
-		if err != nil {
-			logger.ErrorLogger.Println("Failed to get user:", err)
+		responseMessage, err = service.User.GetUser(message)
+	case uint32(pb.RpcRequest_Logout):
+		responseMessage, err = service.User.Logout(message)
+	}
 
-			return nil, err
-		}
+	if err != nil {
+		logger.ErrorLogger.Println("Failed to execute ", method, " request:", err)
+
+		return nil, err
 	}
 
 	return responseMessage, err

@@ -21,5 +21,6 @@ func initUserRouter(router *router.Router, rpcClient rpc.IRPCClient) {
 		userController.LoginRegisterHandler(ctx, false)
 	})
 	router.GET("/profile", userController.GetProfilePage)
+	router.GET("/edit", userController.GetEditPage)
 	router.POST("/edit/{username}/", userController.UpdateUserHandler)
 }

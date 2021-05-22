@@ -9,9 +9,8 @@ message RpcRequest {
     Login = 1;
     Logout = 2;
     Update = 3;
-    Upload = 4;
-    Register = 5;
-    GetUser = 6;
+    Register = 4;
+    GetUser = 5;
   }
   required Method method = 1;
   optional string token = 2;

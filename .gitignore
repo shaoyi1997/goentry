@@ -1,4 +1,6 @@
 # log files
 logs.txt
 
+# image files
 images/
+!images/defaultAvatar.png

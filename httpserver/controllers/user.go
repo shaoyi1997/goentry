@@ -81,14 +81,13 @@ func (controller *UserController) LoginRegisterHandler(ctx *fasthttp.RequestCtx,
 	}
 
 	setSessionIDCookie(ctx, token)
-	ctx.Redirect("/profile", http.StatusFound)
+	redirectToProfilePage(ctx)
 }
 
-// GetProfilePage renders the profile page by the session token.
-func (controller *UserController) GetProfilePage(ctx *fasthttp.RequestCtx) {
+func (controller *UserController) getProfile(ctx *fasthttp.RequestCtx, isEdit bool) {
 	token := extractToken(ctx)
 	if token == "" {
-		ctx.Redirect("/login", http.StatusFound)
+		redirectToLoginPage(ctx)
 
 		return
 	}
@@ -108,14 +107,32 @@ func (controller *UserController) GetProfilePage(ctx *fasthttp.RequestCtx) {
 	if responseErr != pb.GetUserResponse_Ok {
 		if responseErr == pb.GetUserResponse_UserNotFound {
 			removeSessionIDCookie(ctx)
-			ctx.Redirect("/login", http.StatusFound)
+			redirectToLoginPage(ctx)
 
 			return
 		}
 	}
 
+	var template view.TemplateString
+
+	if isEdit {
+		template = view.Templates.Edit
+	} else {
+		template = view.Templates.Profile
+	}
+
 	user := response.GetUser()
-	executeTemplate(ctx, view.Templates.Profile, user)
+	executeTemplate(ctx, template, user)
+}
+
+// GetProfilePage renders the profile page by the session token.
+func (controller *UserController) GetProfilePage(ctx *fasthttp.RequestCtx) {
+	controller.getProfile(ctx, false)
+}
+
+// GetEditPage renders the profile page by the session token, allowing the user to edit the page.
+func (controller *UserController) GetEditPage(ctx *fasthttp.RequestCtx) {
+	controller.getProfile(ctx, true)
 }
 
 func (controller *UserController) LogoutHandler(ctx *fasthttp.RequestCtx) {
@@ -136,7 +153,8 @@ func (controller *UserController) LogoutHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	executeTemplate(ctx, view.Templates.Login, nil)
+	removeSessionIDCookie(ctx)
+	redirectToLoginPage(ctx)
 }
 
 func (controller *UserController) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
@@ -155,12 +173,13 @@ func (controller *UserController) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 
 	responseErr := response.GetError()
 	if responseErr == pb.UpdateResponse_InvalidToken {
-		executeTemplate(ctx, view.Templates.Login, nil)
+		removeSessionIDCookie(ctx)
+		redirectToLoginPage(ctx)
 	} else if responseErr != pb.UpdateResponse_Ok {
 		executeTemplate(ctx, view.Templates.Login, nil) // TODO: error in profile
 	}
 
-	executeTemplate(ctx, view.Templates.Profile, response.User)
+	redirectToProfilePage(ctx)
 }
 
 func (controller *UserController) extractUpdateRequest(ctx *fasthttp.RequestCtx) *pb.UpdateRequest {
@@ -276,7 +295,7 @@ func (controller *UserController) redirectIfCtxHasValidToken(ctx *fasthttp.Reque
 		return false
 	}
 
-	ctx.Redirect("/profile", http.StatusFound)
+	redirectToProfilePage(ctx)
 
 	return true
 }
@@ -317,4 +336,12 @@ func addCookie(ctx *fasthttp.RequestCtx, exp time.Time, key, value string) {
 	cookie.SetHTTPOnly(true)
 	cookie.SetSecure(true)
 	ctx.Response.Header.SetCookie(&cookie)
+}
+
+func redirectToLoginPage(ctx *fasthttp.RequestCtx) {
+	ctx.Redirect("/login", http.StatusFound)
+}
+
+func redirectToProfilePage(ctx *fasthttp.RequestCtx) {
+	ctx.Redirect("/profile", http.StatusFound)
 }

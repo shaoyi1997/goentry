@@ -1,0 +1,38 @@
+{{ define "Edit" }}
+{{ template "Header" }}
+{{ template "NavBar" . }}
+<link href="/css/profile.css" rel="stylesheet">
+<script text="text/javascript" src="/js/profile.js"></script>
+<div class="container">
+  <div class="wrapper bg-white">
+    <h3 class="pb-4 border-bottom">Edit Profile</h3>
+    <form enctype="multipart/form-data" action="/edit/{{.Username}}/" method="POST">
+      <div class="d-flex align-items-start py-3 border-bottom">
+        <img id="imageResult" src="{{.ProfileImage}}" class="rounded-circle profile-image">
+        <div class="pl-sm-4 pl-2" id="img-section">
+          <b>Profile Photo</b>
+          <p>Less than 5MB</p>
+          <input class="form-control form-control-sm" type="file" name="profile_image" id="upload" onchange="readURL(this);">
+        </div>
+      </div>
+      <div class="py-2">
+        <div class="row py-2">
+          <div class="col-md-6">
+            <label for="username">Username</label>
+            <input type="text" class="bg-light form-control" value="{{.Username}}" id="username" name="username" disabled>
+          </div>
+          <div class="col-md-6 pt-md-0 pt-3">
+            <label for="nickname">Nickname</label>
+            <input type="text" class="bg-light form-control" value="{{.Nickname}}" id="nickname" name="nickname" oninput="onNicknameChange()">
+          </div>
+        </div>
+        <div class="pt-3 d-flex justify-content-end">
+          <button class="btn btn-primary btn-sm mx-3 disabled" id="submit-button" type="submit">Save Changes</button>
+          <button class="btn border btn-sm">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{{ template "Footer" }}
+{{ end }}

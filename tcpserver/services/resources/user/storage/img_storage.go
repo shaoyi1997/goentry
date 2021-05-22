@@ -14,14 +14,13 @@ type IImageStorage interface {
 }
 
 type ImageStorage struct {
-	fileServerAddr string
-	storageDir     string
+	storageDir string
 }
 
 func NewImageStorage() IImageStorage {
 	config := config.GetFileServerConfig()
 
-	return &ImageStorage{fileServerAddr: config.Address, storageDir: config.StorageDir}
+	return &ImageStorage{storageDir: config.StorageDir}
 }
 
 func (storage *ImageStorage) StoreImage(username, fileName string, data *string) (string, error) {
@@ -49,7 +48,5 @@ func (storage *ImageStorage) StoreImage(username, fileName string, data *string)
 		return "", err
 	}
 
-	imgURL := storage.fileServerAddr + "/" + imgPath
-
-	return imgURL, nil
+	return imgPath, nil
 }
