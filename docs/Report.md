@@ -159,7 +159,7 @@ The following diagram illustrates the sample flow for a login request.
 
 ### Architecture
 
-The following diagram illustrates the high level architecture of the HTTP server.
+The following diagram illustrates the high level architecture of the TCP server.
 
 ![TCP Server](TCPServer.png)
 
@@ -218,7 +218,7 @@ The following image shows the result for `MD5`
 
 ![Performance Test Result - MD5](PerformanceTestMd5.png)
 
-Clearly, `MD5` achieved a much higher QPS of **22341** as compared to a QPS of **6391** for `BCrypt`
+Clearly, `MD5` achieved a much higher QPS of **22872** as compared to a QPS of **6391** for `BCrypt`
 
 
 **Security In Question**

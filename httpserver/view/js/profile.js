@@ -10,7 +10,7 @@ function readURL(input) {
 
         const reader = new FileReader();
         reader.onload = function (e) {
-            document.getElementById("image-feedback").src = e.target.result;
+            document.getElementById("imageResult").src = e.target.result;
         };
         reader.readAsDataURL(input.files[0]);
         enableSubmitButton()

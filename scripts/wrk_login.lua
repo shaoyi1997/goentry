@@ -25,5 +25,5 @@ request = function()
     wrk.method = "POST"
     wrk.body   = string.format("username=%s&password=%s", line, line)
     wrk.headers["Content-Type"] = "application/x-www-form-urlencoded"
-    return wrk.format(nil, "/user/login")
+    return wrk.format(nil, "/login")
 end
